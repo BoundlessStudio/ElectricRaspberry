@@ -1,0 +1,2 @@
+Write me a marketing slogan for my {{$BUSINESS}} in {{$CITY}} with 
+a focus on {{$SPECIALTY}} we are without sacrificing quality.

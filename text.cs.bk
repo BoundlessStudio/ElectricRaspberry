@@ -1,0 +1,10 @@
+// {
+//   var context = new ContextVariables("This is my input that will get summarized for me. And when I go off on a tangent it will make it harder But it will figure out that the only thing to summarize is that this is a text to be summarized. You think?");
+//   var skill = myKernel.Func("TestSkillFlex", "SummarizeBlurbFlex");
+//   var result = await myKernel.RunAsync(context, skill);
+//   Console.WriteLine(result);
+// }
+
+// 3hg8Q~SxG1c6ixdddGw-LjNP6afMNne0XWN7ub6S
+
+// 9188040d-6c67-4c5b-b112-36a304b66dad
