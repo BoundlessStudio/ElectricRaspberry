@@ -94,12 +94,6 @@ internal static class Extensions
             _ = kernel.ImportSkill(skill, nameof(MathSkill));
         }
 
-        if (ShouldLoad(nameof(PlannerSkill), skillsToLoad))
-        {
-            var skill = new PlannerSkill(kernel);
-            _ = kernel.ImportSkill(skill, nameof(PlannerSkill));
-        }
-
         if (ShouldLoad(nameof(TextMemorySkill), skillsToLoad))
         {
             var skill = new TextMemorySkill();

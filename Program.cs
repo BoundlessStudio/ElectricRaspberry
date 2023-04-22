@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
+using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Planners;
 
 // Load configuration
 IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -67,46 +69,17 @@ myKernel.RegisterNativeSkills();
 myKernel.RegisterNativeGraphSkills(graphServiceClient);
 myKernel.RegisterTextMemory();
 
+var goal = "Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then email it to jamie_maxwell_webster@hotmail.com with the subject 'New Marketing Slogan'";
+var planner = new SequentialPlanner(myKernel);
+var plan = await planner.CreatePlanAsync(goal);
 
+var id = DateTime.UtcNow.ToFileTime();
+await System.IO.File.AppendAllTextAsync($"plans/plan-{id}.json", plan.ToJson());
 
-// var skill = myKernel.Func("TestSkillFlex", "SloganMakerFlex");
-// var context = new ContextVariables(); 
-// context.Set("BUSINESS", "Wiped Balls"); 
-// context.Set("CITY", "Seattle"); 
-// context.Set("SPECIALTY", "basketball cleaning"); 
-// var slogan = await myKernel.RunAsync(context, skillSloganMaker);
+var ctx = new ContextVariables();
+while(plan.HasNextStep)
+  plan = await plan.RunNextStepAsync(myKernel, ctx);
 
-// var skillEmail = myKernel.Func(nameof(EmailSkill), "SendEmailAsync");
-// ContextVariables emailMemory = new ContextVariables($"New Slogan{Environment.NewLine}{Environment.NewLine}{slogan}");
-// emailMemory.Set(EmailSkill.Parameters.Recipients, "esustachah@gmail.com");
-// emailMemory.Set(EmailSkill.Parameters.Subject, $"New Slogan");
-// var result = await myKernel.RunAsync(emailMemory,skillEmail);
-
-var job = new Plan("Create a Slogan");
-{
-  var skill = myKernel.Func("TestSkillFlex", "SloganMakerFlex");
-  var context = new ContextVariables(); 
-  context.Set("BUSINESS", "Wiped Balls"); 
-  context.Set("CITY", "Seattle"); 
-  context.Set("SPECIALTY", "basketball cleaning"); 
-  var plan = new Plan(skill)
-  {
-    NamedParameters = context,
-  };
-  job.AddSteps(plan);
-}
-{
-  var skill = myKernel.Func(nameof(EmailSkill), "SendEmailAsync");
-  var context = new ContextVariables($"New Slogan{Environment.NewLine}{Environment.NewLine}{slogan}");
-  context.Set(EmailSkill.Parameters.Recipients, "jamie_maxwell_webster@hotmail.com");
-  context.Set(EmailSkill.Parameters.Subject, $"New Slogan");
-  var plan = new Plan(skill)
-  {
-    NamedParameters = context,
-  };
-  job.AddSteps(plan);
-}
-var result = await job.InvokeAsync();
-Console.WriteLine(result);
+Console.WriteLine("Plan Complete");
 
 record OpenAIConfiguration(string ApiKey, string OrgId);

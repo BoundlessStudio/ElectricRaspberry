@@ -8,3 +8,21 @@
 // 3hg8Q~SxG1c6ixdddGw-LjNP6afMNne0XWN7ub6S
 
 // 9188040d-6c67-4c5b-b112-36a304b66dad
+
+// var sloganSkill = myKernel.Skills.GetFunction("TestSkillFlex", "SloganMakerFlex");
+// var skillEmail = myKernel.Skills.GetFunction(nameof(EmailSkill), "SendEmailAsync");
+
+// var context = new ContextVariables();
+// context.Set("BUSINESS", "BBQ Pit"); 
+// context.Set("CITY", "London"); 
+// context.Set("SPECIALTY", "Mustard Sauce"); 
+// context.Set(EmailSkill.Parameters.Recipients, "jamie_maxwell_webster@hotmail.com");
+// context.Set(EmailSkill.Parameters.Subject, $"New Slogan");
+
+// var myOutput = await myKernel.RunAsync(context, sloganSkill, skillEmail);
+// Console.WriteLine("Plan Complete");
+
+// myKernel.Memory.SaveInformationAsync()
+// myKernel.Memory.SaveReferenceAsync()
+// myKernel.Memory.GetAsync()
+// myKernel.Memory.SearchAsync()context
