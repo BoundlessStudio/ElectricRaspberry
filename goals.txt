@@ -1,0 +1,5 @@
+var goal = "Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then email it to jamie_maxwell_webster@hotmail.com with the subject 'New Marketing Slogan'";
+var goal = "convert 4 days to seconds then get current date time (in my timezone) and convert it to seconds then add them together and convert to the result back to a date.";
+var goal = "Get the current date then add 4 days to it.";
+var goal = "Get the current time (utc) then add 4 days to it.";
+var goal = "get the current time then wait 3 minutes then get the current time then return both dates formatted: first => second";

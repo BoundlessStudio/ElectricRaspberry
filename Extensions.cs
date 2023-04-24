@@ -1,25 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.KernelExtensions;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Document;
 using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 internal sealed class TokenAuthenticationProvider : IAuthenticationProvider
@@ -41,100 +33,63 @@ internal sealed class TokenAuthenticationProvider : IAuthenticationProvider
 
 internal static class Extensions
 {
-    internal static void RegisterNativeGraphSkills(this IKernel kernel, GraphServiceClient graphServiceClient, IEnumerable<string>? skillsToLoad = null)
+
+    internal static string PrettyJson(this string json)
     {
-        if (ShouldLoad(nameof(CloudDriveSkill), skillsToLoad))
-        {
-            CloudDriveSkill cloudDriveSkill = new(new OneDriveConnector(graphServiceClient));
-            _ = kernel.ImportSkill(cloudDriveSkill, nameof(cloudDriveSkill));
-        }
+        var options = new JsonSerializerOptions(){
+            WriteIndented = true
+        };
+        var element = JsonSerializer.Deserialize<JsonElement>(json);
+        return JsonSerializer.Serialize(element, options);
+    }
 
-        if (ShouldLoad(nameof(TaskListSkill), skillsToLoad))
-        {
-            TaskListSkill taskListSkill = new(new MicrosoftToDoConnector(graphServiceClient));
-            _ = kernel.ImportSkill(taskListSkill, nameof(taskListSkill));
-        }
+    internal static void RegisterMicrosoftServiceSkills(this IKernel kernel, GraphServiceClient graphServiceClient)
+    {
+        kernel.ImportSkill(new CloudDriveSkill(new OneDriveConnector(graphServiceClient)), nameof(CloudDriveSkill));
+        kernel.ImportSkill(new TaskListSkill(new MicrosoftToDoConnector(graphServiceClient)), nameof(TaskListSkill));
+        kernel.ImportSkill(new EmailSkill(new OutlookMailConnector(graphServiceClient)), nameof(EmailSkill));
+        kernel.ImportSkill(new CalendarSkill(new OutlookCalendarConnector(graphServiceClient)), nameof(CalendarSkill));
+        // TODO: ADD MORE..!
+    }
 
-        if (ShouldLoad(nameof(EmailSkill), skillsToLoad))
-        {
-            EmailSkill emailSkill = new(new OutlookMailConnector(graphServiceClient));
-            _ = kernel.ImportSkill(emailSkill, nameof(emailSkill));
-        }
-
-        if (ShouldLoad(nameof(CalendarSkill), skillsToLoad))
-        {
-            CalendarSkill calendarSkill = new(new OutlookCalendarConnector(graphServiceClient));
-            _ = kernel.ImportSkill(calendarSkill, nameof(calendarSkill));
-        }
+    internal static void RegisterGoogleServices(this IKernel kernel)
+    {
+        // TODO: ADD MORE..!
     }
 
     internal static void RegisterTextMemory(this IKernel kernel)
     {
-        _ = kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
+        kernel.ImportSkill(new TextMemorySkill(), nameof(TextMemorySkill));
     }
 
-    internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
+    internal static void RegisterSystemSkills(this IKernel kernel)
     {
+        kernel.ImportSkill(new MathSkill(), nameof(MathSkill));
+        kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
+        kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
+        kernel.ImportSkill(new WaitSkill(), nameof(WaitSkill));
+        kernel.ImportSkill(new ConvertSkill(), nameof(ConvertSkill));
+    }
+
+    internal static void RegisterFilesSkills(this IKernel kernel)
+    {
+        kernel.ImportSkill(new FileIOSkill(), nameof(FileIOSkill));
+        // Create DirectorySkill
+    }
+
+    internal static void RegisterOfficeSkills(this IKernel kernel)
+    {
+        kernel.ImportSkill(new DocumentSkill(new WordDocumentConnector(), new LocalFileSystemConnector()), nameof(DocumentSkill));
+    }
+
+    internal static void RegisterWebSkills(this IKernel kernel, string? ApiKey = null)
+    {
+        kernel.ImportSkill(new HttpSkill(), nameof(HttpSkill));
+        kernel.ImportSkill(new SearchUrlSkill(), nameof(SearchUrlSkill));
+        kernel.ImportSkill(new WebFileDownloadSkill(), nameof(WebFileDownloadSkill));
         
-        if (ShouldLoad(nameof(FileIOSkill), skillsToLoad))
-        {
-            var skill = new FileIOSkill();
-            _ = kernel.ImportSkill(skill, nameof(FileIOSkill));
-        }
-
-        if (ShouldLoad(nameof(HttpSkill), skillsToLoad))
-        {
-            var skill = new HttpSkill();
-            _ = kernel.ImportSkill(skill, nameof(HttpSkill));
-        }
-
-        if (ShouldLoad(nameof(MathSkill), skillsToLoad))
-        {
-            var skill = new MathSkill();
-            _ = kernel.ImportSkill(skill, nameof(MathSkill));
-        }
-
-        if (ShouldLoad(nameof(TextMemorySkill), skillsToLoad))
-        {
-            var skill = new TextMemorySkill();
-            _ = kernel.ImportSkill(skill, nameof(TextMemorySkill));
-        }
-
-        if (ShouldLoad(nameof(TextSkill), skillsToLoad))
-        {
-            var skill = new TextSkill();
-            _ = kernel.ImportSkill(skill, nameof(TextSkill));
-        }
-
-        if (ShouldLoad(nameof(TimeSkill), skillsToLoad))
-        {
-            var skill = new TimeSkill();
-            _ = kernel.ImportSkill(skill, nameof(TimeSkill));
-        }
-
-        if (ShouldLoad(nameof(WaitSkill), skillsToLoad))
-        {
-            var skill = new WaitSkill();
-            _ = kernel.ImportSkill(skill, nameof(WaitSkill));
-        }
-
-        if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))
-        {
-            DocumentSkill skill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
-            _ = kernel.ImportSkill(skill, nameof(DocumentSkill));
-        }
-
-        if (ShouldLoad(nameof(ConversationSummarySkill), skillsToLoad))
-        {
-            ConversationSummarySkill skill = new(kernel);
-            _ = kernel.ImportSkill(skill, nameof(ConversationSummarySkill));
-        }
-
-        if (ShouldLoad(nameof(WebFileDownloadSkill), skillsToLoad))
-        {
-            var skill = new WebFileDownloadSkill();
-            _ = kernel.ImportSkill(skill, nameof(WebFileDownloadSkill));
-        }
+        if(ApiKey is not null)
+            kernel.ImportSkill(new WebSearchEngineSkill(new BingConnector(ApiKey)), nameof(WebSearchEngineSkill));
     }
 
     internal static void RegisterSemanticSkills(

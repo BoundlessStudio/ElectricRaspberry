@@ -1,4 +1,4 @@
 Summarize the following text in two sentences or less. 
----Begin Text---
-{{$INPUT}}
----End Text---
+[BEGIN TEXT]
+{{$input}}
+[END TEXT]
