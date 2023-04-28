@@ -1,2 +1,10 @@
-Explain what you would like to happen in natural language.  This will generate the corresponding code.  It helps to provide a programming language.  
-Description: {{$input}}
+[CONTEXT]
+{{$input}}
+[ENDCONTEXT]
+
+Using the [CONTEXT] create code using {{$language}} programming language.
+
+ANY DESCRIPTIONS, INSTRUCTION, ETC SHOULD BE INCLUDED AS COMMENTS.
+DONT NO RETURN MARKDOWN.
+DONT FORMAT THE CODE AS MARKDOWN.
+RETURN ONLY CODE AS A SINGLE FILE.

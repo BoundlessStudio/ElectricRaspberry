@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "description": "Turn natural language into code.",
+  "description": "Analyze the code producing the natural language that describes the code.",
   "type": "completion",
   "completion": {
-    "max_tokens": 2048,
+    "max_tokens": 4048,
     "temperature": 0,
     "top_p": 0,
     "presence_penalty": 0,
@@ -16,7 +16,7 @@
     "parameters": [
       {
         "name": "input",
-        "description": "the natural language to convert into code",
+        "description": "the code to be analyzed",
         "defaultValue": ""
       },
       {

@@ -1,0 +1,16 @@
+[CONTEXT]
+NOVEL SUMMARY: 
+{{$novel_outline}}
+
+PREVIOUS CHAPTER SUMMARY:
+{{$previous_chapter}}
+
+CURENT CHAPTER INDEX: 
+{{$chapter_index}}
+[END CONTEXT]
+
+WRITE THIS CHAPTER USING [CONTEXT] AND CHAPTER SYNOPSIS. 
+DO NOT REPEAT SYNOPSIS IN THE OUTPUT
+
+Chapter Synopsis:
+{{$input}}

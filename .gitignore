@@ -349,13 +349,21 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# Plans are debug for each user
-plans/
-!plans/.gitkeep
-
 # Output are debug for each user
 output/
 !output/.gitkeep
+
+# Files are debug for each user
+output/files/
+!output/files/.gitkeep
+
+# Plans are debug for each user
+output/plans/
+!output/plans/.gitkeep
+
+# State are debug for each user
+output/plans/
+!output/plans/.gitkeep
 
 # Ignore Nuget
 nuget.config

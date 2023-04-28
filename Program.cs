@@ -28,7 +28,7 @@ var bingConfiguration = configuration.GetRequiredSection("Bing").Get<BingConfigu
 var graphServiceClient = await MSALHelper.CreateGraphServiceClientAsync(graphApiConfiguration, logger);
 
 var kernelConfig = new KernelConfig()
-  .AddOpenAIChatCompletionService("GPT-4", "gpt-4-0314", openAIConfiguration.ApiKey, openAIConfiguration.OrgId)
+  .AddOpenAIChatCompletionService("GPT-4", "gpt-4", openAIConfiguration.ApiKey, openAIConfiguration.OrgId)
   .AddOpenAITextCompletionService("GPT-3.5", "gpt-3.5-turbo", openAIConfiguration.ApiKey, openAIConfiguration.OrgId)
   .AddOpenAITextEmbeddingGenerationService("Embeddings", "text-embedding-ada-002", openAIConfiguration.ApiKey, openAIConfiguration.OrgId);
 
@@ -326,18 +326,21 @@ Output:
 // }
 
 //var planner = new ActionPlanner(myKernel);
-var planner = new SequentialPlanner(myKernel);
+Microsoft.SemanticKernel.Planning.Sequential.SequentialPlannerConfig config = new ();
+var planner = new SequentialPlanner(myKernel, config);
 
-var goal = @"Create an C# azure durable function that calls itself continuously and only returns after receiving an manual event to break then write the results to a 'function.md' in the 'output' directory.";
+var goal = @"Create a short story princess lost in the woods then create a book with 16 full chapters based on the short story then save the book to 'output/files' directory";
 var plan = await planner.CreatePlanAsync(goal);
-await plan.WriteAsync("plans");
+await plan.WriteAsync();
 Console.WriteLine("Plan Created");
 var cxt = myKernel.CreateNewContext();
+Console.WriteLine("Plan Invoked");
 await plan.InvokeAsync(context: cxt, cancel: cts.Token);
+await plan.WriteAsync();
 Console.WriteLine("Plan Complete");
-Console.WriteLine("Variables:");
-await plan.WriteAsync("plans");
+
 foreach (var variable in plan.State)
 {
-  Console.WriteLine(variable.Key + ": " + variable.Value);
+  var p = Path.Combine("output", "state", $"{variable.Key.ToLower()}.md");
+  await File.WriteAllTextAsync(p, variable.Value);
 }

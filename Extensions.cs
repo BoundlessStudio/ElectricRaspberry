@@ -34,7 +34,7 @@ internal sealed class TokenAuthenticationProvider : IAuthenticationProvider
 internal static class Extensions
 {
 
-    internal static Task WriteAsync(this Plan plan, string path, CancellationToken ct = default)
+    internal static Task WriteAsync(this Plan plan, string? id = null, CancellationToken ct = default)
     {
         var options = new JsonSerializerOptions(){
             WriteIndented = true
@@ -42,8 +42,8 @@ internal static class Extensions
         var element = JsonSerializer.Deserialize<JsonElement>(plan.ToJson());
         var json = JsonSerializer.Serialize(element, options);
 
-        var id = DateTime.Now.ToFileTime();
-        var filename = Path.Combine(path, $"{id}.json");
+        var identity = id ?? DateTime.Now.ToFileTime().ToString();
+        var filename = Path.Combine("output", "plans", $"{identity}.json");
         return System.IO.File.WriteAllTextAsync(filename, json, ct);
     }
 
@@ -92,7 +92,7 @@ internal static class Extensions
     internal static void RegisterSystemSkills(this IKernel kernel)
     {
         kernel.ImportSkill(new MathSkill(), nameof(MathSkill));
-        kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
+        //kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
         kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
         kernel.ImportSkill(new WaitSkill(), nameof(WaitSkill));
         kernel.ImportSkill(new ConvertSkill(), nameof(ConvertSkill));

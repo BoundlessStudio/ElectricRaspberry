@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "description": "Turn natural language into code.",
+  "description": "Creates set of chapters summarizes based on the input with a specific total number of chapters",
   "type": "completion",
   "completion": {
     "max_tokens": 2048,
-    "temperature": 0,
+    "temperature": 0.7,
     "top_p": 0,
     "presence_penalty": 0,
     "frequency_penalty": 0
@@ -16,13 +16,13 @@
     "parameters": [
       {
         "name": "input",
-        "description": "the natural language to convert into code",
+        "description": "the outline to based the novel.",
         "defaultValue": ""
       },
       {
-        "name": "language",
-        "description": "the programming language",
-        "defaultValue": ""
+        "name": "chapters",
+        "description": "the number of chapters summaries to create.",
+        "defaultValue": "3"
       }
     ]
   }
