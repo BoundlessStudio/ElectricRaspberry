@@ -1,5 +1,10 @@
-var goal = "Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then email it to jamie_maxwell_webster@hotmail.com with the subject 'New Marketing Slogan'";
-var goal = "convert 4 days to seconds then get current date time (in my timezone) and convert it to seconds then add them together and convert to the result back to a date.";
 var goal = "Get the current date then add 4 days to it.";
-var goal = "Get the current time (utc) then add 4 days to it.";
+var goal = "Get the current time then add 4 days to it.";
+var goal = "Get {{time.now}} then add 5 days to it";
+var goal = "Get current time (utc) then add 5 days to it";
 var goal = "get the current time then wait 3 minutes then get the current time then return both dates formatted: first => second";
+var goal = "search for Laptops on sale then format the results then write the results to 'search_results.txt' in the output directory";
+var goal = "Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then email it to jamie_maxwell_webster@hotmail.com with the subject 'New Marketing Slogan'";
+var goal = "Write a short story about a boy and this dog into a txt file named nouvelle.txt in the output directory";
+var goal = "write a novel about a dog and his boy by brainstorm ideas then pick the best one based on theme then write a outline then write each chapter then save the results to the output directory.";
+var goal = "search my email for zilliz";

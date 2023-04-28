@@ -5,10 +5,14 @@
     <add key="Local-SemanticKernel.Core" value="~\semantic-kernel\dotnet\src\SemanticKernel\bin\Release" />
     <add key="Local-SemanticKernel.Abstractions" value="~\semantic-kernel\dotnet\src\SemanticKernel.Abstractions\bin\Release" />
     <add key="Local-SemanticKernel.Connectors.AI.OpenAI" value="~\semantic-kernel\dotnet\src\Connectors\Connectors.AI.OpenAI\bin\Release" />
+    <add key="Local-SemanticKernel.Connectors.Memory.Qdrant" value="~\semantic-kernel\dotnet\src\Connectors\Connectors.Memory.Qdrant\bin\Release" />
     <add key="Local-SemanticKernel.Skills.Document" value="~\semantic-kernel\dotnet\src\Skills\Skills.Document\bin\Release" />
     <add key="Local-SemanticKernel.Skills.MsGraph" value="~\semantic-kernel\dotnet\src\Skills\Skills.MsGraph\bin\Release" />
     <add key="Local-SemanticKernel.Skills.OpenAPI" value="~\semantic-kernel\dotnet\src\Skills\Skills.OpenAPI\bin\Release" />
     <add key="Local-SemanticKernel.Skills.Web" value="~\semantic-kernel\dotnet\src\Skills\Skills.Web\bin\Release" />
+    <add key="Local-SemanticKernel.Skills.Web" value="~\semantic-kernel\dotnet\src\Skills\Skills.Web\bin\Release" />
+    <add key="Local-SemanticKernel.Planning.ActionPlanner" value="~\semantic-kernel\dotnet\src\Extensions\Planning.ActionPlanner\bin\Release" />
+    <add key="Local-SemanticKernel.Planning.SequentialPlanner" value="~\semantic-kernel\dotnet\src\Extensions\Planning.SequentialPlanner\bin\Release" />
   </packageSources>
 </configuration>
 

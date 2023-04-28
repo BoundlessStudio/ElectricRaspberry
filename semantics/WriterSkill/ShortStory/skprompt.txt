@@ -1,1 +1,1 @@
-{{$input}}
+write a story story about {{$input}}

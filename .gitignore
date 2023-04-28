@@ -359,3 +359,6 @@ output/
 
 # Ignore Nuget
 nuget.config
+
+# msal cache
+.msalcache.bin

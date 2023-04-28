@@ -18,11 +18,19 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.13.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.53.0" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="2.29.0" />
+    <!-- <PackageReference Include="Microsoft.SemanticKernel" Version="0.13.0" /> -->
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.13.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.13.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.13.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.13.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.Qdrant" Version="0.13.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AI.OpenAI" Version="0.13.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planning.ActionPlanner" Version="0.13.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" Version="0.13.0" />
+    <PackageReference Include="Polly" Version="7.2.3" />
+    
   </ItemGroup>
 
   <ItemGroup>
