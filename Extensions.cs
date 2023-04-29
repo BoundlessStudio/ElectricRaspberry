@@ -92,7 +92,7 @@ internal static class Extensions
     internal static void RegisterSystemSkills(this IKernel kernel)
     {
         kernel.ImportSkill(new MathSkill(), nameof(MathSkill));
-        //kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
+        kernel.ImportSkill(new TextSkill(), nameof(TextSkill));
         kernel.ImportSkill(new TimeSkill(), nameof(TimeSkill));
         kernel.ImportSkill(new WaitSkill(), nameof(WaitSkill));
         kernel.ImportSkill(new ConvertSkill(), nameof(ConvertSkill));
@@ -214,12 +214,9 @@ internal static class Extensions
         Imgur
     */
 
-    internal static void RegisterSemanticSkills(
-        this IKernel kernel,
-        string skillsFolder,
-        IEnumerable<string>? skillsToLoad = null)
+    internal static void RegisterSemanticSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
-        
+        var skillsFolder = "skills/semantics";
         var paths = System.IO.Directory.EnumerateFiles(skillsFolder, "*.txt", SearchOption.AllDirectories);
         foreach (string skPromptPath in paths)
         {

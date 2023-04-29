@@ -1,0 +1,3 @@
+REUTRN NO OTHER TEXT THEN FORMATED URL.
+
+https://geocoding-api.open-meteo.com/v1/search?count=3&language=en&format=json&name={{ $input }}

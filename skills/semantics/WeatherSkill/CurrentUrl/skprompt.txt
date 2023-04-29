@@ -1,0 +1,3 @@
+REUTRN NO OTHER TEXT THEN FORMATED URL.
+
+https://api.open-meteo.com/v1/gem?current_weather=true{{ $input }}

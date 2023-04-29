@@ -31,3 +31,5 @@ var goal = @"
 10. Save the full novel to the 'output/files' directory.
 ";
 var goal = @"Create a book with 8 full chapters about a boy and dog then save the result to 'output/files' directory";
+var goal = @"query Klarna for laptops 5 under $500 then format the results as markdown then save the markdown to a file in the 'output/files' directory.";
+var goal = @"search Scryfall for 'Commissar Severina Raine' then format the results then save the formatted results to a file in the 'output/files' directory.";

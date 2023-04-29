@@ -1,0 +1,7 @@
+[CONTEXT]
+{{ httpskill.getasync $input }}
+[END_CONTEXT]
+
+Based on the [CONTEXT] extract the latitude and longitude.
+
+THE OTUPUT MUST BE IN THE FORMAT '&latitude=35.678&longitude=139.682'
