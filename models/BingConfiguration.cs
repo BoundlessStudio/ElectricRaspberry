@@ -1,2 +1,0 @@
-
-record BingConfiguration(string ApiKey);

@@ -1,5 +1,0 @@
-[CODE]
-{{$input}}
-[ENDCODE]
-
-Based on the {{$language}} [CODE] Create a detailed descriptions of what that code. Break it down into sections and think about it step by step.

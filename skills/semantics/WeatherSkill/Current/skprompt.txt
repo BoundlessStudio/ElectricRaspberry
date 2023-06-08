@@ -1,6 +1,0 @@
-[CONTEXT]
-{{httpskill.getasync $input }}
-[END_CONTEXT]
-
-Based on the [CONTEXT] output the current weather with the following: 
-the temperature in celsius, the windspeed and its cardinal direction, and the translated weather code labeled as forcast.

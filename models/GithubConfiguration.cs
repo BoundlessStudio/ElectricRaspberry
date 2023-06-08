@@ -1,2 +1,0 @@
-
-record GithubConfiguration(string PAT);
