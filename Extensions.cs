@@ -1,35 +1,14 @@
-using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.CoreSkills;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Document;
-using Microsoft.SemanticKernel.Skills.Document.FileSystem;
-using Microsoft.SemanticKernel.Skills.Document.OpenXml;
 using Microsoft.SemanticKernel.Skills.MsGraph;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.TemplateEngine;
-
-internal sealed class TokenAuthenticationProvider : IAuthenticationProvider
-{
-    private readonly string _token;
-
-    public TokenAuthenticationProvider(string token)
-    {
-        this._token = token;
-    }
-
-    public Task AuthenticateRequestAsync(HttpRequestMessage request)
-    {
-        return Task.FromResult(request.Headers.Authorization = new AuthenticationHeaderValue(
-            scheme: "bearer",
-            parameter: this._token));
-    }
-}
 
 internal static class Extensions
 {

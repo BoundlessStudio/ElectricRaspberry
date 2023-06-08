@@ -5,6 +5,16 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Orchestration;
+using System.Diagnostics;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+
+long timestamp = 0L;
 
 // Load configuration
 IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -25,56 +35,73 @@ ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
 var graphApiConfiguration = configuration.GetRequiredSection("MsGraph").Get<MsGraphConfiguration>() ?? throw new InvalidOperationException("Missing configuration for Microsoft Graph API.");
 var openAIConfiguration = configuration.GetRequiredSection("OpenAI").Get<OpenAIConfiguration>() ?? throw new InvalidOperationException("Missing configuration for Open AI.");
 var bingConfiguration = configuration.GetRequiredSection("Bing").Get<BingConfiguration>() ?? throw new InvalidOperationException("Missing configuration for Bing.");
+var githubConfiguration = configuration.GetRequiredSection("Github").Get<GithubConfiguration>() ?? throw new InvalidOperationException("Missing configuration for Github.");
 
 var graphServiceClient = await MSALHelper.CreateGraphServiceClientAsync(graphApiConfiguration, logger);
 
-var kernelConfig = new KernelConfig()
-  .AddOpenAIChatCompletionService("GPT-4", "gpt-4", openAIConfiguration.ApiKey, openAIConfiguration.OrgId)
-  .AddOpenAITextCompletionService("GPT-3.5", "gpt-3.5-turbo", openAIConfiguration.ApiKey, openAIConfiguration.OrgId)
-  .AddOpenAITextEmbeddingGenerationService("Embeddings", "text-embedding-ada-002", openAIConfiguration.ApiKey, openAIConfiguration.OrgId);
+var client = new HttpClient();
 
-var memoryStore = new VolatileMemoryStore(); 
-// var memoryStore = new Microsoft.SemanticKernel.Connectors.Memory.Qdrant.QdrantMemoryStore("http://localhost", 6333, 1536);
+  //var kernelConfig = new KernelConfig();
+  //.AddChatCompletionService((k) => new OpenAIChatCompletionService(k, s, openAIConfiguration.ApiKey, openAIConfiguration.OrgId, false, httpClient: client));
+  // .ChatCompletionServices("gpt-4", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, false, httpClient: client)
+  // .TextCompletionServices("text-davinci-003", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client)
+  // .AddTextEmbeddingGenerationService("text-embedding-ada-002", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client);
+  //.AddOpenAIChatCompletionService("gpt-4", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, false, httpClient: client)
+  //.AddOpenAITextCompletionService("text-davinci-003", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client)
+  //.AddOpenAITextEmbeddingGenerationService("text-embedding-ada-002", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client);
+
+var memoryStore = new VolatileMemoryStore();
+// var memoryStore = new Microsoft.SemanticKernel.Connectors.Memory.Qdrant.QdrantMemoryStore("https://acad301e-0b51-4ac6-b51d-280fb1f57822.us-east-1-0.aws.cloud.qdrant.io", 6333, 1536);
+
+timestamp = Stopwatch.GetTimestamp();
 
 IKernel myKernel = Kernel.Builder
-  .WithConfiguration(kernelConfig)
+  .WithAIService<IChatCompletion>("ChatCompletion", new OpenAIChatCompletion("gpt-4", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client))
+  .WithAIService<ITextCompletion>("TextCompletion", new OpenAITextCompletion("text-davinci-003", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client))
+  .WithAIService<ITextEmbeddingGeneration>("TextEmbedding", new OpenAITextEmbeddingGeneration("text-embedding-ada-002", openAIConfiguration.ApiKey, openAIConfiguration.OrgId, httpClient: client))
   .WithLogger(logger)
   .WithMemoryStorage(memoryStore)
   .Build();
 
-//@Monkey TODO: Test These Skills: Memory, Text, and MicrosoftService (Task/Calendar)
-//@rainbow-pineapple TODO: Interact on ImportChatGptPluginSkillFromUrlAsync function with unit tests using https://www.wolframcloud.com/.well-known/ai-plugin.json
 myKernel.RegisterMemorySkills();
 myKernel.RegisterSemanticSkills();
-myKernel.RegisterSystemSkills();
-myKernel.RegisterFilesSkills();
-myKernel.RegisterOfficeSkills();
-myKernel.RegisterWebSkills(bingConfiguration.ApiKey);
+//myKernel.RegisterSystemSkills();
+//myKernel.RegisterFilesSkills();
+//myKernel.RegisterOfficeSkills();
+//myKernel.RegisterWebSkills(bingConfiguration.ApiKey);
 myKernel.RegisterMicrosoftServiceSkills(graphServiceClient);
-//@RGBKnights TODO: Test ChatGptPluginSkill
-await myKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
-//@RGBKnights TODO: Test OpenApiSkill 
-await myKernel.ImportOpenApiSkillFromUrlAsync("Scryfall", new Uri("https://raw.githubusercontent.com/smgoller/scryfall-openapi/master/openapi.yml"));
 
-var cts = new CancellationTokenSource();
-Console.CancelKeyPress += (object? sender, ConsoleCancelEventArgs e) => {
-  e.Cancel = true;
-  cts.Cancel();
-};
+Console.WriteLine("Keneral Build Time: " + Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds);
+timestamp = Stopwatch.GetTimestamp();
 
-Microsoft.SemanticKernel.Planning.Sequential.SequentialPlannerConfig config = new ();
-config.ExcludedSkills.Add("WebFileDownloadSkill");
+var config = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlannerConfig();
+config.ExcludedFunctions.Add("Retrieve");
 var planner = new SequentialPlanner(myKernel, config);
 
-var goal = @"get the Weather for Toronto then write the results into a file in the 'output/files' directory.";
+await myKernel.Memory.SaveInformationAsync("contacts", "jamie_maxwell_webster@hotmail.com", "1");
+await myKernel.Memory.SaveInformationAsync("contacts", "master@rgbknights.com", "2");
+await myKernel.Memory.SaveInformationAsync("contacts", "admin@highgroundvision.com", "3");
+
+Console.WriteLine("Keneral Memory Time: " + Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds);
+timestamp = Stopwatch.GetTimestamp();
+
+//var goal = @"Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then search your contacts memory for jamie then email the slogan to them with the subject 'New Marketing Slogan'";
+var goal = "Create a slogan for the BBQ Pit in London that specializes in Mustard Sauce then email it to jamie_maxwell_webster@hotmail.com with the subject 'New Marketing Slogan'"; //
 var plan = await planner.CreatePlanAsync(goal);
+plan.Name = "Sequential Plan Test 1";
+
+Console.WriteLine("Created Plan Time: " + Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds);
+
 await plan.WriteAsync();
-Console.WriteLine("Plan Created");
 var cxt = myKernel.CreateNewContext();
-Console.WriteLine("Plan Invoked");
-await plan.InvokeAsync(context: cxt, cancel: cts.Token);
+
+timestamp = Stopwatch.GetTimestamp();
+
+await plan.InvokeAsync(context: cxt);
+
+Console.WriteLine("Invoked Plan Time: " + Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds);
+
 await plan.WriteAsync();
-Console.WriteLine("Plan Complete");
 
 foreach (var variable in plan.State)
 {

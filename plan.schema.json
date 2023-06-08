@@ -1,0 +1,321 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "Key": {
+              "type": "string"
+            },
+            "Value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Key",
+            "Value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "Key": {
+              "type": "string"
+            },
+            "Value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Key",
+            "Value"
+          ]
+        }
+      ]
+    },
+    "steps": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                }
+              ]
+            },
+            "steps": {
+              "type": "array",
+              "items": {}
+            },
+            "parameters": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                }
+              ]
+            },
+            "outputs": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "next_step_index": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "skill_name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "steps",
+            "parameters",
+            "outputs",
+            "next_step_index",
+            "name",
+            "skill_name",
+            "description"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                }
+              ]
+            },
+            "steps": {
+              "type": "array",
+              "items": {}
+            },
+            "parameters": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "Key": {
+                      "type": "string"
+                    },
+                    "Value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Key",
+                    "Value"
+                  ]
+                }
+              ]
+            },
+            "outputs": {
+              "type": "array",
+              "items": {}
+            },
+            "next_step_index": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "skill_name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "steps",
+            "parameters",
+            "outputs",
+            "next_step_index",
+            "name",
+            "skill_name",
+            "description"
+          ]
+        }
+      ]
+    },
+    "parameters": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "Key": {
+              "type": "string"
+            },
+            "Value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Key",
+            "Value"
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "type": "array",
+      "items": {}
+    },
+    "next_step_index": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "skill_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "state",
+    "steps",
+    "parameters",
+    "outputs",
+    "next_step_index",
+    "name",
+    "skill_name",
+    "description"
+  ]
+}

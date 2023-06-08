@@ -55,6 +55,16 @@ myKernel.RegisterMicrosoftServiceSkills(graphServiceClient);
 //@RGBKnights TODO: Test OpenApiSkill 
 // await myKernel.ImportOpenApiSkillFromUrlAsync("QuickChart", new Uri("https://quickchart.io/openapi.yaml"));
 
+//@RGBKnights TODO: Test ChatGptPluginSkill
+// await myKernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"));
+// await myKernel.ImportChatGptPluginSkillFromUrlAsync("Wolfram", new Uri("https://www.wolframcloud.com/.well-known/ai-plugin.json"), client);
+//@RGBKnights TODO: Test OpenApiSkill 
+// await myKernel.ImportOpenApiSkillFromUrlAsync("Scryfall", new Uri("https://raw.githubusercontent.com/smgoller/scryfall-openapi/master/openapi.yml"));
+// var authenticationProvider = new BearerAuthenticationProvider(() => { 
+//   return Task.FromResult(githubConfiguration.PAT);
+// });
+// await myKernel.ImportOpenApiSkillFromFileAsync("GitHubSkill", "./api/github/openapi.json", authenticationProvider.AuthenticateRequestAsync);
+
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (object? sender, ConsoleCancelEventArgs e) => {
   e.Cancel = true;
