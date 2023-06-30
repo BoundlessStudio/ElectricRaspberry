@@ -370,3 +370,6 @@ nuget.config
 
 # msal cache
 .msalcache.bin
+
+# SQLLite Database
+*.db
