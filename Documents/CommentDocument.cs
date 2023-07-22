@@ -14,10 +14,13 @@ public class CommentDocument
   public string Body { get; set; } = string.Empty;
 
   [Required]
+  public bool InContext {get; set;} = false;
+
+  [Required]
   public int Tokens {get; set;} = 0;
 
   [Required]
-  public int Characters {get; set;} = 0;
+  public double Relevance { get; set; } = 0;
 
   [Required]
   public string FeedId {get; set;} = string.Empty;

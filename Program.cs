@@ -3,10 +3,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.Configure<BingOptions>(builder.Configuration.GetSection("Bing"));
+builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth0"));
+builder.Services.Configure<MsGraphOptions>(builder.Configuration.GetSection("MsGraph"));
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
@@ -69,13 +76,27 @@ builder.Services.AddAuthorization(options =>
 {
   options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build();
 });
-builder.Services.AddDbContext<FeedsContext>(opt => opt.UseInMemoryDatabase("FeedsContext"));
-//builder.Services.AddDbContext<FeedsContext>(opt => opt.UseSqlite("Data Source=Database.db"));
-builder.Services.AddSingleton<GeorgeAgent>();
-builder.Services.AddSingleton<DalleAgent>();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<Polly.Caching.IAsyncCacheProvider, Polly.Caching.Memory.MemoryCacheProvider>();
+builder.Services.AddSingleton<ITextChunkerService, TextChunkerService>();
+builder.Services.AddSingleton<IFeedStorageService, FeedStorageService>();
 builder.Services.AddSingleton<ICommentTaskQueue>(_ => new CommentTaskQueue(10));
 builder.Services.AddSingleton<ISecurityService,SecurityService>();
+builder.Services.AddSingleton<IMemoryStore,VolatileMemoryStore>();
+builder.Services.AddSingleton<ISemanticTextMemory>(sp => {
+  var store = sp.GetRequiredService<IMemoryStore>();
+  var options = sp.GetRequiredService<IOptions<OpenAIOptions>>();
+  return new SemanticTextMemory(store, new OpenAITextEmbeddingGeneration("text-embedding-ada-002", options.Value.ApiKey, options.Value.OrgId));
+});
 builder.Services.AddHostedService<CommentHostedService>();
+builder.Services.AddDbContext<FeedsContext>(opt => opt.UseInMemoryDatabase("FeedsContext")); // builder.Services.AddDbContext<FeedsContext>(opt => opt.UseSqlite("Data Source=Database.db"));
+builder.Services.AddScoped<GeorgeAgent>();
+builder.Services.AddScoped<CharlesAgent>();
+builder.Services.AddScoped<DalleAgent>();
+builder.Services.AddScoped<JeeveAgent>();
+builder.Services.AddScoped<TeslaAgent>();
+builder.Services.AddScoped<AlexAgent>();
+builder.Services.AddScoped<ShuriAgent>();
 
 var app = builder.Build();
 
@@ -93,8 +114,10 @@ app.Map("/", () => Results.Redirect("/swagger/index.html"));
 var api = app.MapGroup("/api");
 api.RequireAuthorization();
 api.WithMetadata(new ProducesResponseTypeAttribute(StatusCodes.Status401Unauthorized));
+var skill = new SkillController();
+api.MapGet("/skills", skill.List).WithName("ListSkills");
 var feed = new FeedController();
-api.MapGet("/feeds", feed.List).WithName("ListFeed");
+api.MapGet("/feeds", feed.List).WithName("ListFeeds");
 api.MapPost("/feed", feed.Create).WithName("CreateFeed");
 api.MapPut("/feed", feed.Edit).WithName("EditFeed");
 api.MapGet("/feed/{feed_id}", feed.Get).WithName("GetFeed");
@@ -103,5 +126,10 @@ var comments = new CommentController();
 api.MapGet("/comments/{feed_id}", comments.List).WithName("ListComments");
 api.MapPost("/comment", comments.Create).WithName("CreateComment");
 api.MapDelete("/comment/{comment_id}", comments.Delete).WithName("DeleteComment");
+var file = new FileController();
+api.MapPost("/whisper", file.Whisper).WithName("Whisper");
+api.MapPost("/upload/{feed_id}", file.Upload).WithName("Upload");
+
+app.Services.CreateScope().ServiceProvider.GetService<FeedsContext>()?.Database?.EnsureCreated();
 
 app.Run();

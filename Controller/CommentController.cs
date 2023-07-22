@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 
 public class CommentController
@@ -30,19 +29,18 @@ public class CommentController
 
   public async Task<Results<Ok<CommentDocument>, NotFound<string>>> Create(ClaimsPrincipal principal, ISecurityService security, ICommentTaskQueue queue, FeedsContext context, [FromBody]CommentCreateDocument dto)
   {
-    var user = security.GetUser(principal);
+    var user = security.GetAuthorizedUser(principal);
     var feed = await context.Feeds.FindAsync(dto.FeedId);
     if (feed is null) return TypedResults.NotFound($"Feed {dto.FeedId} dose not exist");
     
     var model = new CommentRecord()
     {
-        CommentId = Guid.NewGuid().ToString(),
+        CommentId = Guid.NewGuid().ToString("N"),
         FeedId = feed.FeedId,
         Body = dto.Body,
         Type = dto.Type,
         Timestamp = DateTimeOffset.UtcNow,
         Tokens = GPT3Tokenizer.Encode(dto.Body).Count,
-        Characters = dto.Body.Length,
         Author = user.ToRecord(),
     };
     await context.Comments.AddAsync(model);
@@ -57,18 +55,23 @@ public class CommentController
 
   public async Task<Results<Ok<IEnumerable<CommentDocument>>, NotFound>> List(ClaimsPrincipal principal, ISecurityService security, FeedsContext context, [FromRoute]string feed_id)
   {
-    var user = security.GetUser(principal);
+    var user = security.GetAuthorizedUser(principal);
     var feed = await context.Feeds.FindAsync(feed_id);
     if(feed is null) return TypedResults.NotFound();
     if(feed.Access == FeedAccess.Private && feed.OwnerId != user.UserId) return TypedResults.NotFound();
     var query = await context.Comments.Where(_ => _.FeedId == feed_id).OrderBy(_ => _.Timestamp).ToListAsync();
-    var collection = query .Select(_ => _.ToDocument()).AsEnumerable();
-    return TypedResults.Ok(collection);
+    var collection = query .Select(_ => _.ToDocument()).OrderBy(_ => _.Timestamp).ToList();
+    for (int i = collection.Count - 1, sum = 0; i >= 0 ; i--)
+    {
+      sum += collection[i].Tokens;
+      collection[i].InContext = sum < 4000;
+    }
+    return TypedResults.Ok(collection.AsEnumerable());
   }
 
   public async Task<Results<NoContent, NotFound>> Delete(ClaimsPrincipal principal, ISecurityService security, FeedsContext context, [FromRoute]string comment_id)
   {
-    var user = security.GetUser(principal);
+    var user = security.GetAuthorizedUser(principal);
     var model = await context.Comments.FindAsync(comment_id);
     if(model is null) return TypedResults.NotFound();
      var feed = await context.Feeds.FindAsync(model.FeedId);

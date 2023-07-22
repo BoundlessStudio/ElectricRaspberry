@@ -4,9 +4,9 @@ public class CommentRecord
   public string Type { get; set; } = string.Empty;
   public string Body { get; set; } = string.Empty;
   public int Tokens { get; set; } = 0;
-  public int Characters { get; set; } = 0;
+  public double Relevance { get; set; } = 0;
   public string FeedId { get; set; } = string.Empty;
-  public virtual AuthorRecord? Author { get; set; }
+  public virtual AuthorRecord Author { get; set; } = new AuthorRecord();
   public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
 }
 

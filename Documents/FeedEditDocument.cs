@@ -14,4 +14,7 @@ public class FeedEditDocument
 
   [Required]
   public FeedAccess Access { get; set; } = FeedAccess.Private;
+
+  [Required]
+  public List<string> SelectedSkills { get; set; } = new List<string>();
 }

@@ -8,6 +8,7 @@ public static class FeedConverter
       Name = model.Name ?? string.Empty,
       Description = model.Description  ?? string.Empty,
       Access = model.Access,
+      SelectedSkills = model.Skills.Select(_ => _.SkillId).ToList(),
     };
   }
 }

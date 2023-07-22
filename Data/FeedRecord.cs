@@ -6,6 +6,7 @@ public class FeedRecord
   public string Name { get; set; } = string.Empty;
   public string Description  { get; set; } = string.Empty;
   public FeedAccess Access { get; set; } = FeedAccess.Private;
+  public ICollection<SkillRecord> Skills { get; set; } = new List<SkillRecord>();
 }
 
 public enum FeedAccess : int

@@ -1,37 +1,27 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
-using Microsoft.SemanticKernel.SkillDefinition;
-
-// Move to Background Service
-// https://learn.microsoft.com/en-us/dotnet/core/extensions/queue-service?pivots=dotnet-7-0
 
 public sealed class CommentHostedService : BackgroundService
 {
   private readonly ICommentTaskQueue queue;
   private readonly ILogger<CommentHostedService> logger;
-  //private readonly IKernel myKernel;
-  // private readonly ISKFunction skill;
-  private readonly IAgent george;
-  private readonly IAgent dalle;
+  private readonly IServiceProvider serviceProvider;
+  private Dictionary<string, Type> agents;
 
-  public CommentHostedService(ICommentTaskQueue queue, IOptions<OpenAIOptions> options, ILogger<CommentHostedService> logger, GeorgeAgent george, DalleAgent dalle)
+  public CommentHostedService(ICommentTaskQueue queue, ILogger<CommentHostedService> logger, IServiceProvider serviceProvider)
   {
     this.queue = queue;
     this.logger = logger;
-    this.george = george;
-    this.dalle = dalle;
-
-    // this.myKernel = Kernel.Builder
-    //   .WithLogger(logger)
-    //   .WithAIService<ITextCompletion>("TextCompletion", new OpenAITextCompletion("text-davinci-003", options.Value.ApiKey, options.Value.OrgId)) // OpenAITextCompletion/OpenAIChatCompletion | gpt-3.5-turbo/gpt-3.5-turbo-16k/text-davinci-003
-    //   .Build();
-
-    //var prompt = @"Please take the following text and transform it into a compressed JSON array of objects.Each object should have properties for 'user' and 'intent'. If no user is mentioned, the 'user' property should be 'unknown'. Please ensure the JSON output is in a minified format. The text for transformation is: {{$INPUT}}";
-    //this.skill = this.myKernel.CreateSemanticFunction(prompt, maxTokens: 2000);
+    this.serviceProvider = serviceProvider;
+    this.agents = new Dictionary<string, Type>()
+    {
+      {"@george", typeof(GeorgeAgent)},
+      {"@charles", typeof(CharlesAgent)},
+      {"@tesla", typeof(TeslaAgent)},
+      {"@dalle", typeof(DalleAgent)},
+      {"@jeeves", typeof(JeeveAgent)},
+      {"@alex", typeof(AlexAgent)},
+      {"@shuri", typeof(ShuriAgent)}
+    };
   }
 
   protected override async Task ExecuteAsync(CancellationToken ct)
@@ -40,32 +30,22 @@ public sealed class CommentHostedService : BackgroundService
     {
       try
       {
-        var (user, model) = await queue.DequeueAsync(ct);
-        if(model.Body.Contains("@george"))
+        var (user, comment) = await queue.DequeueAsync(ct);
+        var scope = this.serviceProvider.CreateScope();
+        var invoked = this.agents.Where(a => comment.Body.Contains(a.Key, StringComparison.OrdinalIgnoreCase));
+        if(invoked.Any())
         {
-          await this.george.InvokeAsync(user, model, ct);
-        }
-        if(model.Body.Contains("@dalle"))
+          foreach (var item in invoked)
+          {
+            var agent = scope.ServiceProvider.GetService(item.Value) as IAgent ?? throw new InvalidOperationException($"Could not get {item.Value.Name} from the scoped service provider for {item.Key}");
+            await agent.InvokeAsync(user, comment, ct);
+          }
+        } 
+        else if(!comment.Author.IsBot)
         {
-          await this.dalle.InvokeAsync(user, model, ct);
+          var george = scope.ServiceProvider.GetService<GeorgeAgent>() ?? throw new InvalidOperationException($"Could not get GeorgeAgent from the scoped service provider.");
+          await george.InvokeAsync(user, comment, ct);
         }
-
-        // var ctx = await skill.InvokeAsync(input: model.Body, cancellationToken: ct);
-        // var mentions = JsonSerializer.Deserialize<List<MentionModel>>(ctx.Result) ?? new List<MentionModel>();
-        // foreach (var mention in mentions)
-        // {
-        //   switch (mention.User)
-        //   {
-        //     case "george":
-        //       await this.george.InvokeAsync(user, model, mention, ct);
-        //       break;
-        //     case "unknown":
-        //       break;
-        //     default: 
-        //       // Suggest 3 Follow Up Prompts
-        //       break;
-        //   }
-        // }
       }
       catch (OperationCanceledException) {} // Prevent throwing if stoppingToken was signaled
       catch (Exception ex)
