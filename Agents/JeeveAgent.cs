@@ -205,36 +205,58 @@ public class JeeveAgent : IAgent
 
   private async Task<List<string>> GetChunks(string url, CancellationToken ct)
   {
-    var reponse = await this.httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, url), ct);
-    switch (reponse.Content.Headers.ContentType?.MediaType)
+    var response = await this.httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, url), ct);
+    response.EnsureSuccessStatusCode();
+    var length = response.Content.Headers.ContentLength / 4;
+    if(length.HasValue && length.Value > 200000000) throw new InvalidOperationException($"File {url} too large");
+    switch (response.Content.Headers.ContentType?.MediaType)
     {
       case "text/plain":
         {
-          var text = await reponse.Content.ReadAsStringAsync(ct);
-          return this.chunker.GetParagraphs(text).ToList();
+          var text = await response.Content.ReadAsStringAsync(ct);
+          if(GPT3Tokenizer.Encode(text).Count > 1000) {
+            return this.chunker.GetParagraphs(text).ToList();
+          } else {
+            return new List<string>() { text };
+          }
         }
       case "text/markdown":
         {
-          var text = await reponse.Content.ReadAsStringAsync(ct);
-          return this.chunker.GetParagraphs(text).ToList();
+          var text = await response.Content.ReadAsStringAsync(ct);
+          if(GPT3Tokenizer.Encode(text).Count > 1000) {
+            return this.chunker.GetParagraphs(text).ToList();
+          } else {
+            return new List<string>() { text };
+          }
         }
       case "application/pdf":
         {
-          var stream = await reponse.Content.ReadAsStreamAsync(ct);
+          var stream = await response.Content.ReadAsStreamAsync(ct);
           var pages = this.chunker.SplitPdf(stream).ToList();
           return this.chunker.GetParagraphs(pages).ToList();
         }
       case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         {
-          var stream = await reponse.Content.ReadAsStreamAsync(ct);
+          var stream = await response.Content.ReadAsStreamAsync(ct);
           return this.chunker.SplitWord(stream).ToList();
         }
       case "text/csv":
+        {
+          var text = await response.Content.ReadAsStringAsync(ct);
+          if(GPT3Tokenizer.Encode(text).Count > 1000) {
+            var lines = this.chunker.GetLines(text).ToList();
+            return lines.Skip(1).Select(l => lines[0] + Environment.NewLine + l).ToList();
+          } else {
+            return new List<string>() { text };
+          }
+        }
       case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-      case "text/xml":
+        {
+          var stream = await response.Content.ReadAsStreamAsync(ct);
+          return this.chunker.SplitExcel(stream).ToList();
+        }
+      case "text/html": // TODO: puppeteer-sharp + browserless..?
       case "application/json":
-      case "text/html":
-      // TODO: puppeteer-sharp + browserless..?
       default:
         return new List<string>();
     }

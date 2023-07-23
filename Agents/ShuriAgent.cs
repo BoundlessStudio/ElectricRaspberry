@@ -418,6 +418,40 @@ public class ShuriAgent : IAgent
         }
       ),
       new Function(
+        "Enable",
+        "Enable a skill in a feed based on its id",
+        new JsonObject
+        {
+          ["type"] = "object",
+          ["properties"] = new JsonObject
+          {
+              ["id"] = new JsonObject
+              {
+                  ["type"] = "string",
+                  ["description"] = "The id of the skill to enable."
+              }
+          },
+          ["required"] = new JsonArray { "id" }
+        }
+      ),
+      new Function(
+        "Disable",
+        "Disable a skill in a feed based on its id",
+        new JsonObject
+        {
+          ["type"] = "object",
+          ["properties"] = new JsonObject
+          {
+              ["id"] = new JsonObject
+              {
+                  ["type"] = "string",
+                  ["description"] = "The id of the skill to disable."
+              }
+          },
+          ["required"] = new JsonArray { "id" }
+        }
+      ),
+      new Function(
         "Delete",
         "Delete a skill based on its id",
         new JsonObject

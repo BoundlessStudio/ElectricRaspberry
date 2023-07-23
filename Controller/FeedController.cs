@@ -31,7 +31,8 @@ public class FeedController
   public async Task<Results<Created<FeedDocument>, BadRequest, NotFound>> Create(ClaimsPrincipal principal, ISecurityService security,  IFeedStorageService storage, FeedsContext context, [FromBody]FeedCreateDocument dto)
   {
     var user = security.GetAuthorizedUser(principal);
-    var skills = context.Skills.Where(_ => _.Owner == SkillRecord.SystemOwner || _.Owner == SkillRecord.SystemOwner || _.Owner == user.UserId).ToList();
+    
+    ICollection<SkillRecord> skills = context.Skills.Where(_ => _.Owner == SkillRecord.SystemOwner || _.Owner == SkillRecord.MicrosoftOwner || _.Owner == user.UserId).ToList();
 
     var model = new FeedRecord()
     { 
