@@ -80,7 +80,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<Polly.Caching.IAsyncCacheProvider, Polly.Caching.Memory.MemoryCacheProvider>();
 builder.Services.AddSingleton<ITextChunkerService, TextChunkerService>();
 builder.Services.AddSingleton<IFeedStorageService, FeedStorageService>();
-builder.Services.AddSingleton<ICommentTaskQueue>(_ => new CommentTaskQueue(10));
+builder.Services.AddSingleton<ICommentTaskQueue>(_ => new CommentTaskQueue(100));
 builder.Services.AddSingleton<ISecurityService,SecurityService>();
 builder.Services.AddSingleton<IMemoryStore,VolatileMemoryStore>();
 builder.Services.AddSingleton<ISemanticTextMemory>(sp => {
