@@ -58,8 +58,6 @@ public sealed class CommentLogger : ILogger
       this.builder.AppendLine(formatter(state, exception));
       this.builder.AppendLine();
       this.comment.Body = this.builder.ToString();
-      //var body = this.builder.ToString();
-      //this.comment.Body = $"```shell {Environment.NewLine}{body}{Environment.NewLine}```";
       this.context.SaveChanges();
       this.hub.Clients.Group(this.comment.FeedId).SendAsync("onCommentsChanged", this.comment.FeedId).Wait();
     }
@@ -169,7 +167,7 @@ public class TeslaAgent : IAgent
     var config = new StepwisePlannerConfig
     {
       MinIterationTimeMs = 1000,
-      MaxIterations = 32,
+      MaxIterations = 16,
       MaxTokens = 4000,
     };
     StepwisePlanner planner = new(myKernel, config);

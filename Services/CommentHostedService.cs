@@ -38,21 +38,6 @@ public sealed class CommentHostedService : BackgroundService
           var agent = scope.ServiceProvider.GetService(item.Value) as IAgent ?? throw new InvalidOperationException($"Could not get {item.Value.Name} from the scoped service provider for {item.Key}");
           await agent.InvokeAsync(user, comment, ct);
         }
-        
-        // var invoked = this.agents.Where(a => comment.Body.Contains(a.Key, StringComparison.OrdinalIgnoreCase));
-        // if(invoked.Any())
-        // {
-        //   foreach (var item in invoked)
-        //   {
-        //     var agent = scope.ServiceProvider.GetService(item.Value) as IAgent ?? throw new InvalidOperationException($"Could not get {item.Value.Name} from the scoped service provider for {item.Key}");
-        //     await agent.InvokeAsync(user, comment, ct);
-        //   }
-        // } 
-        // else if(!comment.Author.IsBot)
-        // {
-        //   var george = scope.ServiceProvider.GetService<GeorgeAgent>() ?? throw new InvalidOperationException($"Could not get GeorgeAgent from the scoped service provider.");
-        //   await george.InvokeAsync(user, comment, ct);
-        // }
       }
       catch (OperationCanceledException) {} // Prevent throwing if stoppingToken was signaled
       catch (Exception ex)
