@@ -106,8 +106,11 @@ public class CharlesAgent : IAgent
   private async Task<string> GetChatResult(IEnumerable<CommentRecord> shortTerm, IEnumerable<CommentRecord> longTerm, CancellationToken ct) 
   {
     var instructions = new StringBuilder();
-    instructions.AppendLine("You are a gifted storyteller, expertly weaving narratives that captivate and inspire our audience.");
-
+    // instructions.AppendLine("You are a gifted storyteller, expertly weaving narratives that captivate and inspire our audience.");
+    instructions.AppendLine("You are writer that can cover a large array of types from Technical, Novelist, Playwright, Columnist, Critic, Screenwriter, Copywriter, Lyricist.");
+    instructions.AppendLine("Infer the type from the user intent and the context of the conversation.");
+    instructions.AppendLine("If it is unclear ask for clarification.");
+    
     var history = this.chatProvider.CreateNewChat(instructions.ToString());
     foreach (var c in longTerm)
     {
