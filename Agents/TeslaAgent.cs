@@ -55,8 +55,8 @@ public sealed class CommentLogger : ILogger
   {
     if(logLevel == LogLevel.Information)
     {
-      this.builder.AppendLine(formatter(state, exception));
-      this.builder.AppendLine();
+      var info = formatter(state, exception);
+      this.builder.AppendLine(info).AppendLine();
       this.comment.Body = this.builder.ToString();
       this.context.SaveChanges();
       this.hub.Clients.Group(this.comment.FeedId).SendAsync("onCommentsChanged", this.comment.FeedId).Wait();
@@ -116,8 +116,9 @@ public class TeslaAgent : IAgent
       .WithLogger(logger)
       .WithMemoryStorage(this.memory)
       .WithAIService<ITextEmbeddingGeneration>("TextEmbedding", new OpenAITextEmbeddingGeneration("text-embedding-ada-002", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
-      .WithAIService<IChatCompletion>("ChatCompletion", new OpenAIChatCompletion("gpt-4", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
-      .WithAIService<ITextCompletion>("TextCompletion", new OpenAIChatCompletion("gpt-3.5-turbo-16k", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
+      .WithAIService<ITextCompletion>("TextCompletion", new OpenAIChatCompletion("gpt-4", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
+      //.WithAIService<IChatCompletion>("ChatCompletion", new OpenAIChatCompletion("gpt-4", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
+      //.WithAIService<ITextCompletion>("TextCompletion", new OpenAIChatCompletion("gpt-3.5-turbo-16k", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
       .Build();
 
     await UpdateResponse(placeholder, "planing", "Importing Skills", ct);
@@ -169,22 +170,43 @@ public class TeslaAgent : IAgent
       MinIterationTimeMs = 1000,
       MaxIterations = 16,
       MaxTokens = 4000,
+      MaxRelevantFunctions = feed.Skills.Count,
+      RelevancyThreshold = 0.1,
+    };
+    var instructions = new StringBuilder();
+    instructions.AppendLine("You are a Stepwise Planner that uses Thought, Action, Observation steps to achieve goals using semantic function.");
+    instructions.AppendLine($"You should plan carefully your goal as you only have {config.MaxIterations} steps");
+
+    var settings = new CompleteRequestSettings()
+    {
+      ChatSystemPrompt = instructions.ToString(),
+      MaxTokens = config.MaxTokens,
+      Temperature = 0,
+      TopP = 0,
+      FrequencyPenalty = 0,
+      PresencePenalty = 0,
+      ResultsPerPrompt = 1,
     };
     StepwisePlanner planner = new(myKernel, config);
-    var input = myKernel.CreateNewContext(ct);
-
+  
     // var goal = "Who is the current president of the United States? What is his current age divided by 2?";
     var plan = planner.CreatePlan(goal);
 
     await UpdateResponse(placeholder, "planing", "Invoking Plan", ct);
 
-    var output = await plan.InvokeAsync(input);
+    var cxt = myKernel.CreateNewContext(ct);
+    var output = await plan.InvokeAsync(cxt, settings);
 
     if(output.Result.Contains("Result not found"))
+    {
       await AddComment(placeholder.FeedId, "comment", "I failed to reach a final conclusion. There can be a number of reasons why from bad planing to lack skill. Sometimes these errors are transient please try again.", ct);
+    }
     else  
+    {
       await AddComment(placeholder.FeedId, "comment", output.Result, ct);
+    }
   }
+
   private async Task<CommentRecord> AddComment(string feedId, string type, string body, CancellationToken ct) 
   {
     var model = new CommentRecord()
