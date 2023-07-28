@@ -82,7 +82,6 @@ public class LeonardoAgent : IAgent
     await this.hub.Clients.Group(comment.FeedId).SendAsync("onCommentsChanged", comment.FeedId, ct);
 
     var description = await GetChatResult(history, ct);
-    if(description.ToLowerInvariant() == "none") return;
   
     var temporary = await GetImage(description);
     var permanent = await this.storageService.CopyFrom(temporary, model.FeedId, ct);
@@ -97,6 +96,9 @@ public class LeonardoAgent : IAgent
 
   private async Task<string> GetImage(string description)
   {
+    if(description.ToLowerInvariant() == "none") 
+      return "https://placehold.co/600x400?text=Not+Found";
+
     var request = new ImageGenerationRequest()
     {
       Prompt = description
@@ -151,7 +153,7 @@ public class LeonardoAgent : IAgent
   private async Task<string> GetChatResult(IEnumerable<CommentRecord> memories, CancellationToken ct) 
   {
     var instructions = "You are an assistant that generates image prompts for Leonardo.ai from chat history." +
-    "The information for prompt will be spread through out the message history." +
+    "The information for prompt will be spread through out the history with the goal being in the latest message." +
     "Aim for describing your thoughts and ideas in such depth that the they can easily be understood, without being too overwhelming." +
     "Return ONLY a short paragraph that describes the image from the intent based on the message history." +
     "If nothing is applicable, just response with 'NONE'";
@@ -167,159 +169,4 @@ public class LeonardoAgent : IAgent
     var msg = await item.GetChatMessageAsync(ct); 
     return msg.Content;
   }
-}
-
-
-public class GeneratedImage
-{
-  [JsonPropertyName("url")]
-  public string Url { get; set; } = string.Empty;
-
-  [JsonPropertyName("nsfw")]
-  public bool Nsfw { get; set; }
-
-  [JsonPropertyName("id")]
-  public string Id { get; set; } = string.Empty;
-
-  // [JsonPropertyName("likeCount")]
-  // public int LikeCount { get; set; }
-
-  // [JsonPropertyName("generated_image_variation_generics")]
-  // public List<object> GeneratedImageVariationGenerics { get; set; }
-}
-
-public class GenerationsByPk
-{
-  [JsonPropertyName("generated_images")]
-  public List<GeneratedImage> GeneratedImages { get; set; } = new List<GeneratedImage>();
-
-  // [JsonPropertyName("modelId")]
-  // public object ModelId { get; set; }
-
-  // [JsonPropertyName("prompt")]
-  // public string Prompt { get; set; }
-
-  // [JsonPropertyName("negativePrompt")]
-  // public string NegativePrompt { get; set; }
-
-  // [JsonPropertyName("imageHeight")]
-  // public int ImageHeight { get; set; }
-
-  // [JsonPropertyName("imageWidth")]
-  // public int ImageWidth { get; set; }
-
-  // [JsonPropertyName("inferenceSteps")]
-  // public int InferenceSteps { get; set; }
-
-  [JsonPropertyName("seed")]
-  public int Seed { get; set; } = 0;
-
-  // [JsonPropertyName("public")]
-  // public bool Public { get; set; }
-
-  // [JsonPropertyName("scheduler")]
-  // public string Scheduler { get; set; }
-
-  // [JsonPropertyName("sdVersion")]
-  // public string SdVersion { get; set; }
-
-  [JsonPropertyName("status")]
-  public string Status { get; set; } = string.Empty;
-
-  // [JsonPropertyName("presetStyle")]
-  // public object PresetStyle { get; set; }
-
-  // [JsonPropertyName("initStrength")]
-  // public object InitStrength { get; set; }
-
-  // [JsonPropertyName("guidanceScale")]
-  // public int GuidanceScale { get; set; }
-
-  [JsonPropertyName("id")]
-  public string Id { get; set; } = string.Empty;
-
-  // [JsonPropertyName("createdAt")]
-  // public DateTime CreatedAt { get; set; }
-}
-
-public class GenerationJobStatus
-{
-  [JsonPropertyName("generations_by_pk")]
-  public GenerationsByPk Generations { get; set; } = new GenerationsByPk();
-}
-
-public class GenerationJob
-{
-  [JsonPropertyName("sdGenerationJob")]
-  public StandardGenerationJob Job {get; set;} = new StandardGenerationJob();
-
-  public class StandardGenerationJob
-  {
-    [JsonPropertyName("generationId")]
-    public string GenerationId { get; set; } = string.Empty;
-  }
-
-}
-
-public class ImageGenerationRequest
-{
-    [JsonPropertyName("prompt")]
-    public string Prompt { get; set; } = string.Empty;
-
-    [JsonPropertyName("negative_prompt")]
-    public string NegativePrompt { get; set; } = string.Empty;
-
-    // [JsonPropertyName("nsfw")]
-    // public bool Nsfw { get; set; } = true;
-
-    [JsonPropertyName("num_images")]
-    public int NumImages { get; set; } = 1;
-
-    [JsonPropertyName("width")]
-    public int Width { get; set; } = 1024;
-
-    [JsonPropertyName("height")]
-    public int Height { get; set; } = 768;
-
-    [JsonPropertyName("num_inference_steps")]
-    public int NumInferenceSteps { get; set; } = 10;
-
-    [JsonPropertyName("guidance_scale")]
-    public int GuidanceScale { get; set; } = 15;
-
-    [JsonPropertyName("init_strength")]
-    public double InitStrength { get; set; } = 0.55;
-
-    // [JsonPropertyName("sd_version")]
-    // public string SdVersion { get; set; } = "v1_5";
-
-    [JsonPropertyName("modelId")]
-    public string ModelId { get; set; } = "ac614f96-1082-45bf-be9d-757f2d31c174";
-
-    [JsonPropertyName("presetStyle")]
-    public string PresetStyle { get; set; } = "DYNAMIC"; //LEONARDO
-
-    [JsonPropertyName("scheduler")]
-    public string Scheduler { get; set; } = "LEONARDO"; // EULER_DISCRETE 
-
-    [JsonPropertyName("public")]
-    public bool Public { get; set; } = false;
-
-    [JsonPropertyName("tiling")]
-    public bool Tiling { get; set; } = false;
-
-    [JsonPropertyName("promptMagic")]
-    public bool PromptMagic { get; set; } = true;
-
-    // [JsonPropertyName("imagePromptWeight")]
-    // public double ImagePromptWeight { get; set; } = 0.65;
-
-    // [JsonPropertyName("alchemy")]
-    // public bool Alchemy { get; set; } = true;
-
-    // [JsonPropertyName("highResolution")]
-    // public bool HighResolution { get; set; } = false;
-
-    // [JsonPropertyName("leonardoMagicVersion")]
-    // public string LeonardoMagicVersion { get; set; } = "v3";
 }

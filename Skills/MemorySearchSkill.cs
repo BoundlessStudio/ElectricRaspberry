@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 public class MemorySearchSkill
 {
-  private const double DefaultRelevance = 0.0;
+  private const double DefaultRelevance = 0.5;
   private const int DefaultLimit = 1;
   private readonly string collection;
   private readonly ISemanticTextMemory memory;
@@ -21,7 +21,7 @@ public class MemorySearchSkill
   [SKFunction, SKName("RecallMemories"), Description("Semantic search and return up to N memories related to the input text.")]
   public async Task<string> RecallAsync(
     [Description("The input text to find related memories for")] string input, 
-    [DefaultValue(0)][Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match")] double? relevance, 
+    [DefaultValue(0.5)][Description("The relevance score, from 0.0 to 1.0, where 1.0 means perfect match")] double? relevance, 
     [DefaultValue(1)][Description("The maximum number of relevant memories to recall")] int? limit, 
     ILogger? logger,
     CancellationToken cancellationToken = default

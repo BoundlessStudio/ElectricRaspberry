@@ -11,6 +11,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 // a function that generates marketing slogans
 // @shuri I want to create a new skill that generates marketing slogans.
 
+// @tesla Create Marketing Slogan for The BBQ Pit in London that specializes in Mustard sauce then email it to myself with the subject Marketing Slogan.
+
 public class ShuriAgent : IAgent
 {
   private readonly IHubContext<FeedHub> hub;
