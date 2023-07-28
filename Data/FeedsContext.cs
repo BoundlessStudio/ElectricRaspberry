@@ -24,8 +24,7 @@ public class FeedsContext : DbContext
     modelBuilder.Entity<SkillRecord>().HasData(
       new SkillRecord() { Type = SkillType.Coded, SkillId = "16b59f4c263b40de97839143aea7ed0c", Name = "System.Time", TypeOf = nameof(TimeSkill), Owner = SkillRecord.SystemOwner },
       new SkillRecord() { Type = SkillType.Coded, SkillId = "eb26a105368142ddb04c74985335db4b", Name = "System.Math", TypeOf = nameof(LanguageCalculatorSkill), Owner = SkillRecord.SystemOwner  },
-      new SkillRecord() { Type = SkillType.Coded, SkillId = "9534e5423a2f4c0c82016b29f7c6f157", Name = "System.Memory", TypeOf = nameof(TextMemorySkill), Owner = SkillRecord.SystemOwner },
-      new SkillRecord() { Type = SkillType.Coded, SkillId = "6878d0bb9c96400ea3ade85bf54ec362", Name = "System.Wait", TypeOf = nameof(WaitSkill), Owner = SkillRecord.SystemOwner },
+      new SkillRecord() { Type = SkillType.Coded, SkillId = "2ba05bae-0e01-4737-aec7-062e59955ab4", Name = "System.Memory", TypeOf = nameof(MemorySearchSkill), Owner = SkillRecord.SystemOwner },
       new SkillRecord() { Type = SkillType.Coded, SkillId = "59b8462108a84584a4820308aa2f89e7", Name = "Bing.Search", TypeOf = nameof(WebSearchEngineSkill), Owner = SkillRecord.SystemOwner }, // Switch to SkillRecord.MicrosoftOwner when Adding Google?
       new SkillRecord() { Type = SkillType.Coded, SkillId = "c3293570a98b40588739db905c10baf3", Name = "Microsoft.Calendar", TypeOf = nameof(CalendarSkill), Owner = SkillRecord.MicrosoftOwner },
       new SkillRecord() { Type = SkillType.Coded, SkillId = "73a7096a4f8040ea9f7b82d507be0cf2", Name = "Microsoft.Drive", TypeOf = nameof(CloudDriveSkill), Owner = SkillRecord.MicrosoftOwner },

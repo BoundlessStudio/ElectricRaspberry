@@ -14,6 +14,7 @@ builder.Services.Configure<BingOptions>(builder.Configuration.GetSection("Bing")
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth0"));
 builder.Services.Configure<MsGraphOptions>(builder.Configuration.GetSection("MsGraph"));
+builder.Services.Configure<LeonardoOptions>(builder.Configuration.GetSection("Leonardo"));
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
@@ -92,7 +93,8 @@ builder.Services.AddHostedService<CommentHostedService>();
 builder.Services.AddDbContext<FeedsContext>(opt => opt.UseInMemoryDatabase("FeedsContext")); // builder.Services.AddDbContext<FeedsContext>(opt => opt.UseSqlite("Data Source=Database.db"));
 builder.Services.AddScoped<GeorgeAgent>();
 builder.Services.AddScoped<CharlesAgent>();
-builder.Services.AddScoped<DalleAgent>();
+// builder.Services.AddScoped<DalleAgent>();
+builder.Services.AddScoped<LeonardoAgent>();
 builder.Services.AddScoped<JeeveAgent>();
 builder.Services.AddScoped<TeslaAgent>();
 builder.Services.AddScoped<AlexAgent>();

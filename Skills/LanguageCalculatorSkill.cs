@@ -68,10 +68,7 @@ Question: {{ $input }}
   }
 
   [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
-  public async Task<string> CalculateAsync(
-    [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
-    string input,
-    SKContext context)
+  public async Task<string> CalculateAsync([Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]string input)
   {
     var answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
 

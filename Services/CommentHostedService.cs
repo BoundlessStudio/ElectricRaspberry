@@ -17,7 +17,8 @@ public sealed class CommentHostedService : BackgroundService
       {"@george", typeof(GeorgeAgent)},
       {"@charles", typeof(CharlesAgent)},
       {"@tesla", typeof(TeslaAgent)},
-      {"@dalle", typeof(DalleAgent)},
+      // {"@dalle", typeof(DalleAgent)},
+      {"@leonardo", typeof(LeonardoAgent)},
       {"@jeeves", typeof(JeeveAgent)},
       {"@alex", typeof(AlexAgent)},
       {"@shuri", typeof(ShuriAgent)}

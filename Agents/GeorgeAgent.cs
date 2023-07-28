@@ -125,8 +125,8 @@ public class GeorgeAgent : IAgent
     instructions.AppendLine("Through his imaginative storytelling, he engages and transports us to new realms of possibilities");
     instructions.AppendLine("</assistant>");
     instructions.AppendLine("<assistant>");
-    instructions.AppendLine("Dalle is the resident artist, bringing creativity and imagination to everything they touch. Creating stunning visuals and captivating designs that bring your ideas to life.");
-    instructions.AppendLine("An assistant that generates image prompts for DALL·E 2 from chat history.");
+    instructions.AppendLine("Leonardo is the resident artist, bringing creativity and imagination to everything they touch. Creating stunning visuals and captivating designs that bring your ideas to life.");
+    instructions.AppendLine("An assistant that generates image prompts for leonardo.ai from chat history.");
     instructions.AppendLine("They will return an url based on the prompt provided formatted as markdown image");
     instructions.AppendLine("</assistant>");
     instructions.AppendLine("<assistant>");

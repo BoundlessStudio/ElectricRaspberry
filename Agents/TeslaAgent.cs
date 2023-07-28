@@ -105,7 +105,6 @@ public class TeslaAgent : IAgent
     return Task.FromResult(comment.Body);
   }
 
-
   private async Task RunPlaner(IAuthorizedUser user, CommentRecord placeholder, string goal, CancellationToken ct) 
   {
     await UpdateResponse(placeholder, "planing", "Creating Kernel", ct);
@@ -134,8 +133,7 @@ public class TeslaAgent : IAgent
     {
       { nameof(TimeSkill), new TimeSkill() },
       { nameof(LanguageCalculatorSkill), new LanguageCalculatorSkill(myKernel) },
-      { nameof(TextMemorySkill), new TextMemorySkill() },
-      { nameof(WaitSkill), new WaitSkill() },
+      { nameof(MemorySearchSkill), new MemorySearchSkill(myKernel.Memory, placeholder.FeedId) },
       { nameof(WebSearchEngineSkill), new WebSearchEngineSkill(new BingConnector(this.bingOptions.Value.ApiKey)) },
       { nameof(CalendarSkill), new CloudDriveSkill(new OneDriveConnector(graphClient)) },
       { nameof(CloudDriveSkill), new CloudDriveSkill(new OneDriveConnector(graphClient)) },
