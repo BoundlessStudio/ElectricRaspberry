@@ -276,7 +276,7 @@ public class ImageGenerationRequest
     public int NumImages { get; set; } = 1;
 
     [JsonPropertyName("width")]
-    public int Width { get; set; } = 512;
+    public int Width { get; set; } = 1024;
 
     [JsonPropertyName("height")]
     public int Height { get; set; } = 768;
