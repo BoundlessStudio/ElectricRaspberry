@@ -15,8 +15,9 @@ namespace ElectricRaspberry.Skills
     "2. Chart.js for charting. Use global varaible 'Chart'. You need to add a canvas element to sandbox before use. Do not return Base64 encoded images as there are too large. " +
     "3. Grid.js for Advanced Table Plugin. Use global varaible 'gridjs.Grid'. You must include the following options when creating a Grid: 'pagination: true', 'search: true', and 'sort: true'. " +
     "4. vis.js (vis-timeline) for an interactive visualization chart to visualize data in time. Use global varaibles 'vis.Timeline' and 'vis.DataSet'." +
-    "The sandbox environment is reset between calls so you will need to supply the full script. " +
-    "You have access to DIV element with the id of 'sandbox' for DOM manipulation via javascript that is displayed along side the final result." +
+    "5. Google (Maps JavaScript API) for an interactive map. You will need to import the map form the google library 'const { Map } = await google.maps.importLibrary(`maps`);'. You MUST set the height of the #sandox element to 400px or the user can not see the map. Use the mordern Web APIs to provde the users location. " +
+    "The environment is reset between calls so you will need to supply the full script. " +
+    "You have access to DIV element with the id of 'sandbox'. Use this as root element for interactive controls and/or for DOM manipulation via javascript. This sandbox is displayed to the user along side the final result. " +
     "The code you create is loaded via a Function constructor. The function will be invoked asynchronously. " +
     "The code you write must use 'await' instead of '.then()' if invoking a promise. " +
     "The function may return a result that is captured and the 'console.log' is also captured both are return along with any errors. " +

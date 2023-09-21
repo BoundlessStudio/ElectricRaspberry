@@ -49,11 +49,8 @@ public class GoalController
     myKernel.ImportSkill(new DrawImageSkill(user, leonardoOptions, storageService, httpFactory), nameof(DrawImageSkill));
     myKernel.ImportSkill(new CalendarSkill(user), nameof(CalendarSkill));
     // myKernel.ImportSkill(new ConverterSkill(myKernel, user, convertioOptions, storageService, httpFactory), nameof(ConverterSkill));
-    // myKernel.ImportSkill(new UserFeedbackSkill(hub, dto.ConnectionId), nameof(UserFeedbackSkill));
+    myKernel.ImportSkill(new UserFeedbackSkill(hub, dto.ConnectionId), nameof(UserFeedbackSkill));
     // myKernel.ImportSkill(new PuppeteerSkill(user, browserlessOptions, storageService), nameof(PuppeteerSkill));
-
-    // ToDo:
-    // Files => Upload File to Blob Storage
 
     var config = new StepwisePlannerConfig
     {
@@ -64,7 +61,8 @@ public class GoalController
     var instructions = new StringBuilder();
     instructions.AppendLine("You are a Stepwise Planner that uses Thought, Action, Observation steps to achieve goals using semantic function.");
     instructions.AppendLine($"You should plan carefully your goal as you only have {config.MaxIterations} steps");
-    instructions.AppendLine($"Your final message to the user should include markdown for formating the message.");
+    instructions.AppendLine("Your final message should include markdown to format the message with basic styling, images, and links.");
+    instructions.AppendLine($"The user's name is {user.Name}.");
 
     var settings = new CompleteRequestSettings()
     {
