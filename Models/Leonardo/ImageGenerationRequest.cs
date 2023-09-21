@@ -54,8 +54,8 @@ public class ImageGenerationRequest
     // [JsonPropertyName("imagePromptWeight")]
     // public double ImagePromptWeight { get; set; } = 0.65;
 
-    // [JsonPropertyName("alchemy")]
-    // public bool Alchemy { get; set; } = true;
+    //[JsonPropertyName("alchemy")]
+    //public bool Alchemy { get; set; } = true;
 
     // [JsonPropertyName("highResolution")]
     // public bool HighResolution { get; set; } = false;
