@@ -54,7 +54,7 @@ public class GoalController
 
     var config = new StepwisePlannerConfig
     {
-      MinIterationTimeMs = 100,
+      MinIterationTimeMs = 1000,
       MaxIterations = 16,
       MaxTokens = 4000,
     };
