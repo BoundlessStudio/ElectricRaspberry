@@ -42,6 +42,7 @@ public class GoalController
       .WithAIService<ITextEmbeddingGeneration>("TextEmbedding", new OpenAITextEmbeddingGeneration("text-embedding-ada-002", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
       .WithAIService<ITextCompletion>("TextCompletion", new OpenAIChatCompletion("gpt-4-0613", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
       .WithAIService<IChatCompletion>("ChatCompletion", new OpenAIChatCompletion("gpt-4-0613", aiOptions.Value.ApiKey, aiOptions.Value.OrgId))
+      .WithRetryBasic()
       .Build();
 
     myKernel.ImportSkill(new JsCodingSkill(myKernel, hub, dto.ConnectionId), nameof(JsCodingSkill));
@@ -56,13 +57,10 @@ public class GoalController
     {
       MinIterationTimeMs = 1000,
       MaxIterations = 16,
-      MaxTokens = 4000,
+      MaxTokens = 2000,
     };
     var instructions = new StringBuilder();
-    instructions.AppendLine("You are a Stepwise Planner that uses Thought, Action, Observation steps to achieve goals using semantic function.");
-    instructions.AppendLine($"You should plan carefully your goal as you only have {config.MaxIterations} steps");
-    instructions.AppendLine("Your final message should include markdown to format the message with basic styling, images, and links.");
-    instructions.AppendLine($"The user's name is {user.Name}.");
+    instructions.AppendLine($"You are a Stepwise Planner that uses Thought, Action, Observation steps to achieve goals using semantic function. You only have {config.MaxIterations} steps. Your final message should formated via markdown.");
 
     var settings = new CompleteRequestSettings()
     {
