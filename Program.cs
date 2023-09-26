@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
+builder.Services.Configure<AzureAIOptions>(builder.Configuration.GetSection("AzureAI"));
 builder.Services.Configure<BingOptions>(builder.Configuration.GetSection("Bing"));
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth0"));

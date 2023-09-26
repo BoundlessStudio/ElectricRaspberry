@@ -1,7 +1,6 @@
 ﻿using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
-using Microsoft.Graph;
 using ElectricRaspberry.Models;
 using ElectricRaspberry.Models.TinyUrl;
 
