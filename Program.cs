@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
+// builder.Logging.AddFilter("Microsoft.SemanticKernel.Planning.StepwisePlanner", LogLevel.Warning);
+
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.Configure<AzureAIOptions>(builder.Configuration.GetSection("AzureAI"));
 builder.Services.Configure<BingOptions>(builder.Configuration.GetSection("Bing"));
@@ -97,6 +99,7 @@ builder.Services.AddSingleton<IStorageService, StorageService>();
 //});
 
 var app = builder.Build();
+
 
 app.MapSwagger();
 app.UseSwaggerUI();
