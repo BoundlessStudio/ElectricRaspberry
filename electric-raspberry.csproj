@@ -13,9 +13,9 @@
     <Content Remove="C:\Users\jamie\.nuget\packages\microsoft.semantickernel.connectors.ai.openai\0.24.230912.2-preview\contentFiles\any\netstandard2.0\Tokenizers\Settings\vocab.bpe" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Auth0.AuthenticationApi" Version="7.20.0" />
-    <PackageReference Include="Auth0.ManagementApi" Version="7.20.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
+    <PackageReference Include="Auth0.AuthenticationApi" Version="7.22.3" />
+    <PackageReference Include="Auth0.ManagementApi" Version="7.22.3" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.18.0" />
     <PackageReference Include="CoreCLR-NCalc" Version="2.2.113" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.7" />
@@ -25,13 +25,12 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Memory.Qdrant" Version="0.24.230918.1-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Planning.SequentialPlanner" Version="0.24.230918.1-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Planning.StepwisePlanner" Version="0.24.230918.1-preview" />
-    <PackageReference Include="OneOf" Version="3.0.255" />
     <PackageReference Include="OpenAI-DotNet" Version="7.0.9" />
-    <PackageReference Include="Polly" Version="7.2.4" />
+    <PackageReference Include="Polly" Version="8.0.0" />
     <PackageReference Include="Polly.Caching.Memory" Version="3.0.2" />
-    <PackageReference Include="PuppeteerSharp" Version="11.0.6" />
+    <PackageReference Include="PuppeteerSharp" Version="12.0.0" />
     <PackageReference Include="PuppeteerSharp.Dom" Version="3.0.24" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
 </Project>

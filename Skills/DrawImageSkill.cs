@@ -60,7 +60,8 @@ namespace ElectricRaspberry.Skills
       var temporary = image?.Url ?? throw new InvalidOperationException("Failed to generate an image.");
       var permanent = await this.storageService.CopyFrom(temporary, user.Container);
 
-      return permanent;
+      var name = prompt.Substring(0, 10);
+      return $"![{name}]({permanent})";
     }
   }
 }

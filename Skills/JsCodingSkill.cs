@@ -9,19 +9,21 @@ namespace ElectricRaspberry.Skills
 {
   public class JsCodingSkill
   {
+    // You should use the sandbox element as the root. 
     const string CODE_PROMPT =
 @"
 Run JavaScript in the user's browser to compute results and visualize data in various ways.
 The environment and constraints are designed to capture both the results and any errors that occur during execution.
+Use night mode / dark theme.
 
 Constraints
 Browser Execution: All code will be run in the browser, not on Node.js.
 Pre-loaded Libraries: Libraries are pre-loaded in the environment; there's no need to import or require them again.
 Sandbox Environment: This sandbox can access the user's device via browser APIs and contains pre-loaded libraries you will need.
-Sandbox Element: You have access to a DIV element with the ID of 'sandbox', which is displayed to the user alongside the final result.
+Sandbox Element: You have access to a DIV element with the ID of 'sandbox', which is displayed to the user alongside the final result. 
 Loader: The code you create is loaded via a asynchronously Function constructor and this function will be invoked asynchronously.
-Result Limitations: The code you create MUST return a result. Any results MUST be a string.
-Async: You MUST use await/async.
+Result Limitations: The code you create MUST return a result.
+Async/Callback: Because you MUST return a result you MUST return a Promise when using async or callbacks to ensure a result is returned.
 Environment Reset: The environment is reset between calls, requiring the full script for each invocation.
 Post-Execution Validation: Use the results to correct any issues and try again until you achieve a successful outcome.
 Timeout: The Environment has a timeout of 30s while running the code you create.
@@ -30,11 +32,11 @@ Libraries
 Danfo.js: Accessible as dfd, for handling CSV and JSON data. Functions include loading, manipulating, and analyzing data.
 NumJS: Provides mathematical and statistical operations on array-like structures.
 Grid.js: Accessible as gridjs.Grid, for creating interactive tables. You must include the options 'pagination: true', 'search: true', and 'sort: true'.
-Google Maps: for the creation and manipulation of interactive maps. Use global varaible 'google.maps'. Wrap the functions in promises to use with await/async to return a result.
 Day.js: For handling and manipulating dates and times.
 vis-timeline: Available as vis.Timeline and vis.DataSet, for creating interactive timelines.
 Plotly: Used for creating various charts and graphs.
-JsBarcode: Generates barcode images from data strings. use global variable JsBarcode. You MUST add a svg element with the id of 'barcode' as a child of the 'sandbox' element. You MUST return that the barcode was created. 
+JsBarcode: Generates barcode images from data strings. use global variable JsBarcode. Add a svg element with the id of 'barcode' as a child of the 'sandbox' element and use that for the barcode. You MUST return that the barcode was created. 
+Google Maps: for the creation and manipulation of interactive maps. Use global varaible 'google.maps'. You MUST add mapId: 'd41bdaccefda73cc' for styling.
 ";
 
 

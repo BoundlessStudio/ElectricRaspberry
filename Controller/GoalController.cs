@@ -6,11 +6,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Stepwise;
+using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 
 public class GoalController
 {
-  public async Task<string> Plan(
+  public async Task<MessageDocument> Plan(
     ClaimsPrincipal principal,
     //IOptions<OpenAIOptions> aiOptions,
     IOptions<AzureAIOptions> aiOptions,
@@ -45,6 +47,16 @@ public class GoalController
     var plan = planner.CreatePlan(dto.Goal);
     var cxt = myKernel.CreateNewContext();
     var output = await plan.InvokeAsync(cxt);
-    return output.Result;
+    var steps = output.Variables["stepsTaken"];
+    var logs = JsonConvert.DeserializeObject<List<StepDocument>>(steps) ?? new List<StepDocument>();
+    var filtered = logs.Where(l => !l.IsEmpty()).ToList();
+
+    var msg = new MessageDocument()
+    {
+      Role = Role.Assistant,
+      Content = output.Result,
+      Logs = filtered
+    };
+    return msg;
   }
 }
