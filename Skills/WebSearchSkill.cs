@@ -1,178 +1,197 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using ElectricRaspberry.Models;
+using ElectricRaspberry.Services;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.SkillDefinition;
+using PuppeteerSharp;
+using PuppeteerSharp.Dom;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace ElectricRaspberry.Skills;
 
-/// <summary>
-/// Web search engine plugin (e.g. Bing).
-/// </summary>
-public sealed class WebSearchSkill
-{
-  /// <summary>
-  /// The count parameter name.
-  /// </summary>
-  public const string CountParam = "count";
+//public sealed class WebSearchSkill
+//{
+//  private readonly string goal;
+//  private readonly IUser user;
+//  private readonly IWebSearchConnector connector;
+//  private readonly ConnectOptions connectOptions;
+//  private readonly IChatCompletion chatCompletion;
+//  private readonly IStorageService storageService;
 
-  /// <summary>
-  /// The offset parameter name.
-  /// </summary>
-  public const string OffsetParam = "offset";
+//  // Add Goal for LLM
+//  public WebSearchSkill(string goal, IUser user, IOptions<BingOptions> bingOptions, IOptions<BrowserlessOptions> browserlessOptions, IKernel kernel, IStorageService storageService, IHttpClientFactory httpFactory)
+//  {
+//    this.goal = goal;
+//    this.user = user;
+//    this.connector = new BingConnector(bingOptions.Value.ApiKey, httpFactory);
+//    this.connectOptions = new ConnectOptions() { BrowserWSEndpoint = $"wss://chrome.browserless.io?token={browserlessOptions.Value.ApiKey}" };
+//    this.chatCompletion = kernel.GetService<IChatCompletion>("gpt4-32k");
+//    this.storageService = storageService;
+//  }
 
-  private readonly IWebSearchConnector _connector;
+//  [SKFunction, Description("Perform a search engine query")]
+//  public async Task<string> SearchAsync([Description("Search query")] string query)
+//  {
+//    var results = await connector.SearchAsync(query, 3, 0).ConfigureAwait(false);
+//    if (!results.Any())
+//      throw new InvalidOperationException("Failed to get a response from the web search engine.");
 
-  /// <summary>
-  /// Initializes a new instance of the <see cref="WebSearchSkill"/> class.
-  /// </summary>
-  /// <param name="connector">The web search engine connector.</param>
-  public WebSearchSkill(IWebSearchConnector connector)
-  {
-    _connector = connector;
-  }
+//    var chat = chatCompletion.CreateNewChat();
+//    chat.AddSystemMessage("Instructions: Using the goal as your focus summarize the json results of this web search into a single paragraph. Goal: " + goal);
+//    foreach (var item in results)
+//    {
+//      var json = JsonSerializer.Serialize(item);
+//      chat.AddUserMessage(json);
+//    }
+    
+//    return await chatCompletion.GenerateMessageAsync(chat);
+//  }
 
-  /// <summary>
-  /// Performs a web search using the provided query, count, and offset.
-  /// </summary>
-  /// <param name="query">The text to search for.</param>
-  /// <param name="count">The number of results to return. Default is 3.</param>
-  /// <param name="offset">The number of results to skip. Default is 0.</param>
-  /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-  /// <returns>A task that represents the asynchronous operation. The value of the TResult parameter contains the search results as a string.</returns>
-  [SKFunction, Description("Perform a web search.")]
-  public async Task<string> SearchAsync(
-    [Description("Search query")] string query,
-    [Description("Number of results")] int count = 3,
-    [Description("Number of results to skip")] int offset = 0
-  )
-  {
-    var results = await _connector.SearchAsync(query, count < 1 ? 1 : count, offset).ConfigureAwait(false);
-    if (!results.Any())
-      throw new InvalidOperationException("Failed to get a response from the web search engine.");
+//  //[SKFunction, Description("Read a web page")]
+//  //public async Task<string> ReadAsync([Description("Url for page to load")] string url)
+//  //{
+//  //  await using var browser = await Puppeteer.ConnectAsync(connectOptions);
+//  //  await using var page = await browser.NewPageAsync();
+//  //  await page.SetViewportAsync(new ViewPortOptions { Width = 1280, Height = 768 });
+//  //  var response = await page.GoToAsync(url);
 
-    return count == 1 ? results.FirstOrDefault() ?? string.Empty : JsonSerializer.Serialize(results);
-  }
-}
+//  //  // Prioritize 'article' tags
+//  //  var articles = await page.QuerySelectorAllAsync<HtmlElement>("article");
+//  //  if (articles.Any())
+//  //  {
+//  //    return await GetSummary(articles);
+//  //  }
+
+//  //  // Fallback to 'main' tag
+//  //  var main = await page.QuerySelectorAsync("main");
+//  //  if (main is not null)
+//  //  {
+//  //    var text = await main.ToDomHandle<HtmlElement>().GetInnerHtmlAsync();
+//  //    return await GetSummary(articles);
+//  //  }
+
+//  //  // Fallback to 'body' tag
+//  //  var body = await page.QuerySelectorAsync<HtmlElement>("body");
+//  //  return await GetSummary(body);
+//  //}
+
+//  private async Task<string> GetSummary(HtmlElement element)
+//  {
+//    var text = await element.GetInnerTextAsync();
+//    var chat = chatCompletion.CreateNewChat();
+//    chat.AddSystemMessage("Instructions: Using the goal as your focus summarize the web page into a single paragraph. Goal: " + goal);
+//    chat.AddUserMessage(text);
+//    return await chatCompletion.GenerateMessageAsync(chat);
+//  }
+
+//  private async Task<string> GetSummary(HtmlElement[] elements)
+//  {
+//    var chat = chatCompletion.CreateNewChat();
+//    chat.AddSystemMessage("Instructions: Using the goal as your focus summarize the web page into a single paragraph. Goal: " + goal);
+//    foreach (var element in elements)
+//    {
+//      var text = await element.GetInnerTextAsync();
+//      chat.AddUserMessage(text);
+//    }
+//    return await chatCompletion.GenerateMessageAsync(chat);
+//  }
+//}
 
 
+//public interface IWebSearchConnector
+//{
+//  Task<IEnumerable<WebPage>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default);
+//}
 
-/// <summary>
-/// Web search engine connector interface.
-/// </summary>
-public interface IWebSearchConnector
-{
-  /// <summary>
-  /// Execute a web search engine search.
-  /// </summary>
-  /// <param name="query">Query to search.</param>
-  /// <param name="count">Number of results.</param>
-  /// <param name="offset">Number of results to skip.</param>
-  /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-  /// <returns>First snippet returned from search.</returns>
-  Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default);
-}
+//public sealed class BingConnector : IWebSearchConnector
+//{
+//  private readonly ILogger _logger;
+//  private readonly HttpClient _httpClient;
+//  private readonly string? _apiKey;
 
+//  public BingConnector(string apiKey, IHttpClientFactory httpFactory, ILogger? logger = null)
+//  {
+//    _apiKey = apiKey;
+//    _logger = logger ?? NullLogger.Instance;
+//    _httpClient = httpFactory.CreateClient();
+//  }
 
-/// <summary>
-/// Bing API connector.
-/// </summary>
-public sealed class BingConnector : IWebSearchConnector
-{
-  private readonly ILogger _logger;
-  private readonly HttpClient _httpClient;
-  private readonly string? _apiKey;
+//  /// <inheritdoc/>
+//  public async Task<IEnumerable<WebPage>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+//  {
+//    if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
 
+//    if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
 
-  /// <summary>
-  /// Initializes a new instance of the <see cref="BingConnector"/> class.
-  /// </summary>
-  /// <param name="apiKey">The API key to authenticate the connector.</param>
-  /// <param name="httpClient">The HTTP client to use for making requests.</param>
-  /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-  public BingConnector(string apiKey, IHttpClientFactory httpFactory, ILogger? logger = null)
-  {
-    _apiKey = apiKey;
-    _logger = logger ?? NullLogger.Instance;
-    _httpClient = httpFactory.CreateClient();
-  }
+//    if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 
-  /// <inheritdoc/>
-  public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
-  {
-    if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+//    Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
-    if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
+//    _logger.LogDebug("Sending request: {Uri}", uri);
 
-    if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+//    using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
 
-    Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
+//    _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
-    _logger.LogDebug("Sending request: {Uri}", uri);
+//    string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-    using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
+//    // Sensitive data, logging as trace, disabled by default
+//    _logger.LogTrace("Response content received: {Data}", json);
 
-    _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
+//    BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
-    string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+//    WebPage[]? results = data?.WebPages?.Value;
 
-    // Sensitive data, logging as trace, disabled by default
-    _logger.LogTrace("Response content received: {Data}", json);
+//    return results == null ? Enumerable.Empty<WebPage>() : results;
+//  }
 
-    BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
+//  /// <summary>
+//  /// Sends a GET request to the specified URI.
+//  /// </summary>
+//  /// <param name="uri">The URI to send the request to.</param>
+//  /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
+//  /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
+//  private async Task<HttpResponseMessage> SendGetRequestAsync(Uri uri, CancellationToken cancellationToken = default)
+//  {
+//    using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-    WebPage[]? results = data?.WebPages?.Value;
+//    if (!string.IsNullOrEmpty(_apiKey))
+//    {
+//      httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _apiKey);
+//    }
 
-    return results == null ? Enumerable.Empty<string>() : results.Select(x => x.Snippet);
-  }
+//    return await _httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+//  }
 
-  /// <summary>
-  /// Sends a GET request to the specified URI.
-  /// </summary>
-  /// <param name="uri">The URI to send the request to.</param>
-  /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
-  /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-  private async Task<HttpResponseMessage> SendGetRequestAsync(Uri uri, CancellationToken cancellationToken = default)
-  {
-    using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+//  [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated", Justification = "Class is instantiated through deserialization.")]
+//  private sealed class BingSearchResponse
+//  {
+//    [JsonPropertyName("webPages")]
+//    public WebPages? WebPages { get; set; }
+//  }
 
-    if (!string.IsNullOrEmpty(_apiKey))
-    {
-      httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _apiKey);
-    }
+//  [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated", Justification = "Class is instantiated through deserialization.")]
+//  private sealed class WebPages
+//  {
+//    [JsonPropertyName("value")]
+//    public WebPage[]? Value { get; set; }
+//  }
+//}
 
-    return await _httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-  }
+//public sealed class WebPage
+//{
+//  [JsonPropertyName("name")]
+//  public string Name { get; set; } = string.Empty;
 
-  [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-      Justification = "Class is instantiated through deserialization.")]
-  private sealed class BingSearchResponse
-  {
-    [JsonPropertyName("webPages")]
-    public WebPages? WebPages { get; set; }
-  }
+//  [JsonPropertyName("url")]
+//  public string Url { get; set; } = string.Empty;
 
-  [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-      Justification = "Class is instantiated through deserialization.")]
-  private sealed class WebPages
-  {
-    [JsonPropertyName("value")]
-    public WebPage[]? Value { get; set; }
-  }
-
-  [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
-      Justification = "Class is instantiated through deserialization.")]
-  private sealed class WebPage
-  {
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("url")]
-    public string Url { get; set; } = string.Empty;
-
-    [JsonPropertyName("snippet")]
-    public string Snippet { get; set; } = string.Empty;
-  }
-}
-
+//  [JsonPropertyName("snippet")]
+//  public string Snippet { get; set; } = string.Empty;
+//}

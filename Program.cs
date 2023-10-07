@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.SemanticKernel.Memory;
 
-// builder.Logging.AddFilter("Microsoft.SemanticKernel.Planning.StepwisePlanner", LogLevel.Warning);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAI"));
 builder.Services.Configure<AzureAIOptions>(builder.Configuration.GetSection("AzureAI"));
@@ -16,6 +16,7 @@ builder.Services.Configure<BrowserlessOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<LeonardoOptions>(builder.Configuration.GetSection("Leonardo"));
 builder.Services.Configure<ConvertioOptions>(builder.Configuration.GetSection("Convertio"));
 builder.Services.Configure<TinyUrlOptions>(builder.Configuration.GetSection("TinyUrl"));
+builder.Services.Configure<PythonInterpreterOptions>(builder.Configuration.GetSection("PythonInterpreter"));
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpClient();
@@ -91,12 +92,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<Polly.Caching.IAsyncCacheProvider, Polly.Caching.Memory.MemoryCacheProvider>();
 builder.Services.AddSingleton<IStorageService, StorageService>();
-//builder.Services.AddSingleton<IMemoryStore,VolatileMemoryStore>();
-//builder.Services.AddSingleton<ISemanticTextMemory>(sp => {
-//  var store = sp.GetRequiredService<IMemoryStore>();
-//  var options = sp.GetRequiredService<IOptions<OpenAIOptions>>();
-//  return new SemanticTextMemory(store, new OpenAITextEmbeddingGeneration("text-embedding-ada-002", options.Value.ApiKey, options.Value.OrgId));
-//});
+builder.Services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
 
 var app = builder.Build();
 
