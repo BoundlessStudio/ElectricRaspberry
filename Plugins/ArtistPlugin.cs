@@ -1,19 +1,19 @@
 ﻿using ElectricRaspberry.Models;
 using ElectricRaspberry.Services;
 using Microsoft.Extensions.Options;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Polly;
+using Microsoft.SemanticKernel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
-namespace ElectricRaspberry.Skills
+namespace ElectricRaspberry.Plugins
 {
-  public class DrawImageSkill
+  public class ArtistPlugin
   {
     private readonly IUser user;
     private readonly IStorageService storageService;
     private readonly HttpClient restClient;
 
-    public DrawImageSkill(IUser user, IOptions<LeonardoOptions> options, IStorageService storageService, IHttpClientFactory factory)
+    public ArtistPlugin(IUser user, IOptions<LeonardoOptions> options, IStorageService storageService, IHttpClientFactory factory)
     {
       this.user = user;
       this.storageService = storageService;
@@ -22,11 +22,11 @@ namespace ElectricRaspberry.Skills
       this.restClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", options.Value.ApiKey);
     }
 
-    [SKFunction, Description("Image generation from a text prompt and returns a URL.")]
-    public async Task<string> DrawImageAsync(
-      [Description("The prompt for the image generation")] string prompt, 
-      [Description("The height of the image. Defaults to 768. Must be between 32 and 1024 and be a multiple of 8.")] int height = 768, 
-      [Description("The width of the image. Defaults to 512. Must be between 32 and 1024 and be a multiple of 8.")] int width = 512
+    [SKFunction, Description("Image generation. Use this function to create a image from a text prompt.")]
+    public async Task<string> GenerationImageAsync(
+      [Description("The prompt for the image generation.")] string prompt,
+      [Description("The height of the image."), Required, DefaultValue(768), Range(512, 1024)] int height = 768,
+      [Description("The width of the image."), Required, DefaultValue(512), Range(512, 1024)] int width = 512
     )
     {
       try
@@ -51,7 +51,7 @@ namespace ElectricRaspberry.Skills
           var root = await this.restClient.GetFromJsonAsync<GenerationJobStatus>("https://cloud.leonardo.ai/api/rest/v1/generations/" + generation.Job.GenerationId);
           if (root is null)
             continue;
-          
+
           if (root.Generations.Status != "COMPLETE")
             continue;
 

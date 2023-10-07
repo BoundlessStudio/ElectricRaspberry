@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
-using Microsoft.SemanticKernel.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,7 +91,6 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<Polly.Caching.IAsyncCacheProvider, Polly.Caching.Memory.MemoryCacheProvider>();
 builder.Services.AddSingleton<IStorageService, StorageService>();
-builder.Services.AddSingleton<IMemoryStore, VolatileMemoryStore>();
 
 var app = builder.Build();
 

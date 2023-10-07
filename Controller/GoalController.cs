@@ -1,17 +1,16 @@
+using ElectricRaspberry.Plugins;
 using ElectricRaspberry.Services;
-using ElectricRaspberry.Skills;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Stepwise;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
-using Newtonsoft.Json;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using Microsoft.SemanticKernel.Orchestration;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 
 public class GoalController
 {
@@ -23,88 +22,97 @@ public class GoalController
     IOptions<LeonardoOptions> leonardoOptions,
     IOptions<BrowserlessOptions> browserlessOptions,
     IOptions<PythonInterpreterOptions> pyOptions,
-    //IOptions<ConvertioOptions> convertioOptions,
-    // IHubContext<ClientHub> hub,
     IStorageService storageService,
     IHttpClientFactory httpFactory,
+    IMemoryCache cache,
     ILoggerFactory logFactory,
-    IMemoryStore store,
     [FromBody]GoalDocument dto)
   {
     var user = principal.GetUser();
 
-    var myKernel = Kernel.Builder
-      .WithLoggerFactory(logFactory)
-      .WithAzureTextEmbeddingGenerationService("text-embedding-ada-002", azureAiOptions.Value.Endpoint, azureAiOptions.Value.ApiKey)
-      .WithAzureChatCompletionService("gpt-4", azureAiOptions.Value.Endpoint, azureAiOptions.Value.ApiKey, true, "gpt4-8k", true)
-      .WithAzureChatCompletionService("gpt-4-32k", azureAiOptions.Value.Endpoint, azureAiOptions.Value.ApiKey, false, "gpt4-32k")
-      //.WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", openAiOptions.Value.ApiKey, openAiOptions.Value.OrgId)
-      //.WithOpenAIChatCompletionService("gpt-4", openAiOptions.Value.ApiKey, openAiOptions.Value.OrgId, "gpt4-8k", true, true)
-      //.WithOpenAIChatCompletionService("gpt-4-32k", openAiOptions.Value.ApiKey, openAiOptions.Value.OrgId, serviceId: "gpt4-32k")
-      .WithMemoryStorage(store)
-      .WithRetryBasic()
+    var kernel = new KernelBuilder()
+      .WithAzureChatCompletionService("gpt-4-32k", azureAiOptions.Value.Endpoint, azureAiOptions.Value.ApiKey)
       .Build();
 
-    //myKernel.ImportSkill(new TextMemorySkill(myKernel.Memory), "SemanticTextMemory");
-    myKernel.ImportSkill(new PythonInterpreterSkill(pyOptions, user, storageService, httpFactory), "PythonInterpreterSkill");
-    myKernel.ImportSkill(new WebSearchEngineSkill(new BingConnector(bingOptions.Value.ApiKey, logFactory)), "WebSearchEngineSkill");
-    myKernel.ImportSkill(new DrawImageSkill(user, leonardoOptions, storageService, httpFactory), "DrawImageSkill");
+    var bing = new BingConnector(bingOptions.Value.ApiKey, httpFactory);
+
+    kernel.ImportFunctions(new JavascriptPlugin(kernel));
+    kernel.ImportFunctions(new ScratchpadPlugin(cache));
+    kernel.ImportFunctions(new WebSearchPlugin(kernel, bing));
+    kernel.ImportFunctions(new UserPlugin(user));
+    kernel.ImportFunctions(new ArtistPlugin(user, leonardoOptions, storageService, httpFactory));
+
+    // TODO: Drawing Plugin
+    // leonardo vs dalle
+
+    // TOOD: Read Web Page Plugin
+    // Use browserless to render web page and get the text.
+
+    // TOOD: Javascript Plugin
+    // Return JS code for the followin:
+    // 1. Table -> https://gridjs.io/
+    // 2. Chart -> https://www.chartjs.org/
+    // 3. Diagram -> https://mermaid.js.org/
+    // 4. Barcodes -> https://barcode.tec-it.com/barcode.ashx?data=cb95a36b73fef&type=Code128&width=400&height=100&format=png
+    // 5. QRCodes -> https://api.qrserver.com/v1/create-qr-code/?data=cb95a36b73fef&size=220x220&format=png
+    // 6. Map -> https://developers.google.com/maps/documentation/javascript/overview
+    // 7. Timeline -> https://visjs.github.io/vis-timeline/docs/timeline/
+    // 8. Calendar -> ?
+
+    // TOOD: Javascript Interpreter
+    // Run code
 
     var instructions = new StringBuilder();
-    instructions.AppendLine("[USER]");
-    instructions.AppendLine($"Name: {user.Name}");
-    instructions.AppendLine($"Region: {user.City}, {user.Country}");
-    instructions.AppendLine($"Position: ({user.Latitude},{user.Longitude})");
-    instructions.AppendLine($"Timezone: {user.Timezone}");
-    instructions.AppendLine("[ADDITIONAL INSTRUCTIONS]");
-    instructions.AppendLine("The FINAL ANSWER is shown to the user it should be formated with markdown for links, images, tables and script tags.");
+    instructions.AppendLine("[INSTRUCTION]");
+    instructions.AppendLine("Use markdown formating for links, images, tables and code blocks.");
+    instructions.AppendLine("You are a helpful assistant.");
 
-    // instructions.AppendLine("You have MEMORY use it to save and recall anything by collection and key. Make sure to include any collection/key pairs in the FINAL ANSWER.");
+    var chat = kernel.GetService<IChatCompletion>();
+    var history = chat.CreateNewChat();
+    history.AddSystemMessage(instructions.ToString());
 
-    //var history = dto.History.TakeLast(10).ToList();
-    //if (history.Count > 0)
-    //{
-    //  instructions.AppendLine("[CHAT]");
-    //  foreach (var item in history)
-    //  {
-    //    switch (item.Role)
-    //    {
-    //      case Role.Assistant:
-    //        instructions.AppendLine("Assistant: " + item.Content);
-    //        break;
-    //      case Role.User:
-    //        instructions.AppendLine("User: " + item.Content);
-    //        break;
-    //      default:
-    //        break;
-    //    }
-    //  }
-    //}
-
-    var config = new StepwisePlannerConfig()
+    foreach (var item in dto.History)
     {
-      Suffix = instructions.ToString()
+      switch (item.Role)
+      {
+        case Role.Assistant:
+          history.AddAssistantMessage(item.Content);
+          break;
+        case Role.User:
+          history.AddUserMessage(item.Content);
+          break;
+        case Role.System:
+        default:
+          break;
+      }
+    }
+    history.AddUserMessage(dto.Goal);
+
+    var functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList();
+    var settings = new OpenAIRequestSettings()
+    {
+      Functions = functions,
+      FunctionCall = functions.Count > 0 ? OpenAIRequestSettings.FunctionCallAuto : OpenAIRequestSettings.FunctionCallNone,
     };
 
-    var planner = new StepwisePlanner(myKernel, config).WithInstrumentation(logFactory);
+    var completions = await chat.GetChatCompletionsAsync(history, settings);
+    var completion = completions.FirstOrDefault() ?? throw new InvalidOperationException("Excepted Completion >= 1");
+    var message = await completion.GetChatMessageAsync();
+    var content = message.Content ?? string.Empty;
 
-    var goal = new StringBuilder();
-    goal.AppendLine( dto.Goal);
-    
-    var plan = planner.CreatePlan(goal.ToString());
-    var cxt = myKernel.CreateNewContext();
-    var output = await plan.InvokeAsync(cxt);
+    var match = Regex.Match(content, @"```markdown\s*(.*?)```", RegexOptions.Singleline);
+    string markdown = match.Success ? match.Groups[1].Value : content;
 
-    var json = output.Variables["stepsTaken"];
-    var steps = JsonConvert.DeserializeObject<List<StepDocument>>(json) ?? new List<StepDocument>();
-    var logs = steps.Where(l => !l.IsEmpty()).ToList();
+    var functionResponse = completion.GetFunctionResponse();
+    if(functionResponse is null)
+      return new MessageDocument() { Role = Role.Assistant, Content = markdown };
 
-    var msg = new MessageDocument()
-    {
-      Role = Role.Assistant,
-      Content = output.Result,
-      Logs = logs
-    };
-    return msg;
+    kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? fn, out ContextVariables? cxt);
+    if (fn is null)
+      return new MessageDocument() { Role = Role.Assistant, Content = markdown };
+
+    var result = await kernel.RunAsync(fn, cxt);
+    var value = result.GetValue<string>();
+    return new MessageDocument() { Role = Role.Assistant, Content = value ?? markdown };
   }
 }
