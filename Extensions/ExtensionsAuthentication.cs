@@ -16,11 +16,11 @@ public static class ExtensionsAuthentication
           })
           .AddJwtBearer(options =>
           {
-              options.Authority = configuration["Settings:Auth0Domain"];
-              options.Audience = configuration["Settings:Auth0Audience"];
-              options.Events = new JwtBearerEvents();
-              options.Events.OnMessageReceived += context =>
-          {
+            options.Authority = configuration["Auth0:Domain"];
+            options.Audience = configuration["Auth0:Audience"];
+            options.Events = new JwtBearerEvents();
+            options.Events.OnMessageReceived += context =>
+            {
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub/feed")) context.Token = accessToken;

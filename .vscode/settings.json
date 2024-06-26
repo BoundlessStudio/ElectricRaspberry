@@ -1,3 +1,10 @@
 {
-  "dotnet.defaultSolution": "electric-raspberry.sln"
+  "dotnet.defaultSolution": "electric-raspberry.sln",
+  "azureFunctions.projectSubpath": "bin\\Release\\net8.0",
+  "rest-client.defaultHeaders": {
+    "User-Agent": "vscode-restclient"
+  },
+  "cSpell.words": [
+    "Antiforgery"
+  ]
 }
