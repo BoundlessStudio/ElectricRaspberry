@@ -16,7 +16,6 @@ public class ClientHub : Hub
   // this.Clients.Others
   // this.Groups
 
-
   public ClientHub()
   {
   }
