@@ -6,19 +6,19 @@ Our testing strategy will focus on the following components:
 ### Services (Priority 1)
 Services contain the core business logic and are the most important to test thoroughly.
 
-- [ ] StaminaService
+- [x] StaminaService
   - [x] Initial state tests
-  - [ ] Stamina consumption and recovery
-  - [ ] Sleep/wake transitions
-  - [ ] Forced sleep and wake functions
-  - [ ] Stamina reset
+  - [x] Stamina consumption and recovery
+  - [x] Sleep/wake transitions
+  - [x] Forced sleep and wake functions
+  - [x] Stamina reset
   
-- [ ] VoiceService
+- [x] VoiceService
   - [x] Connection status tests
-  - [ ] Channel join/leave logic
-  - [ ] User presence tracking
-  - [ ] Voice stamina consumption
-  - [ ] Voice events handling
+  - [x] Channel join/leave logic
+  - [x] User presence tracking
+  - [x] Voice stamina consumption
+  - [x] Voice events handling
   
 - [ ] EmotionalService
   - [ ] Emotional state initialization
@@ -48,9 +48,9 @@ Handlers connect external events to our service layer and need testing to ensure
   - [ ] User event handling
   - [ ] Channel event handling
   
-- [ ] VoiceStateHandler
-  - [ ] Voice state change handling
-  - [ ] Service integration
+- [x] VoiceStateHandler
+  - [x] Voice state change handling
+  - [x] Service integration
   
 ### Other Components (Lower Priority)
 These components are mostly boilerplate or act as direct pass-throughs and do not require extensive testing:
