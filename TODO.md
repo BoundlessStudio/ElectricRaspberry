@@ -8,7 +8,7 @@ Based on the README architecture and the current scaffolded project, the followi
 - [ ] Create `IPersonaService` and implementation
 - [ ] Create `IPersonalityService` and implementation
 - [x] Create `IEmotionalService` and implementation with Chris Crawford's model
-- [ ] Create `IConversationService` and implementation
+- [x] Create `IConversationService` and implementation
 - [ ] Create `IKnowledgeService` and implementation with Cosmos DB + Gremlin integration
 - [x] Create `IStaminaService` and implementation with stamina mechanics
 - [ ] Create `ICatchupService` for sleep mode message processing
