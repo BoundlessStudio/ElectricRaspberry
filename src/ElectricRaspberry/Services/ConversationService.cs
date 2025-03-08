@@ -20,7 +20,7 @@ public class ConversationService : IConversationService
         _logger = logger;
     }
     
-    public async Task<Conversation> ProcessMessageAsync(MessageEvent messageEvent)
+    public async Task<Conversation> ProcessMessageAsync(MessageEvent messageEvent, string channelId = null, bool highPriority = false)
     {
         await _conversationLock.WaitAsync();
         try
@@ -31,8 +31,12 @@ public class ConversationService : IConversationService
             // Add the message to the conversation
             conversation.AddMessage(messageEvent);
             
-            // Ensure conversation is marked as active
-            if (conversation.State != ConversationState.Active)
+            // Ensure conversation is marked as active or urgent based on priority
+            if (highPriority)
+            {
+                conversation.State = ConversationState.Urgent;
+            }
+            else if (conversation.State != ConversationState.Active && conversation.State != ConversationState.Urgent)
             {
                 conversation.State = ConversationState.Active;
             }
@@ -260,6 +264,25 @@ public class ConversationService : IConversationService
         }
     }
     
+    public async Task ResetAllConversationsAsync()
+    {
+        await _conversationLock.WaitAsync();
+        try
+        {
+            // Mark all conversations as completed
+            foreach (var conversation in _conversations.Values)
+            {
+                conversation.State = ConversationState.Completed;
+            }
+            
+            _logger.LogInformation("Reset all conversations to completed state");
+        }
+        finally
+        {
+            _conversationLock.Release();
+        }
+    }
+    
     // Helper methods
     private async Task<Conversation> DetermineConversationForMessageAsync(MessageEvent messageEvent)
     {
@@ -306,8 +329,8 @@ public class ConversationService : IConversationService
         // Otherwise create a new channel conversation
         var newChannelConversation = new Conversation(messageEvent);
         _conversations[newChannelConversation.Id] = newChannelConversation;
-        _logger.LogInformation("Created new channel conversation {ConversationId} in {Channel}", 
-            newChannelConversation.Id, messageEvent.Channel is ITextChannel tc ? tc.Name : "channel");
+        _logger.LogInformation("Created new channel conversation {ConversationId} in channel {ChannelId}", 
+            newChannelConversation.Id, messageEvent.Channel.Id);
         return newChannelConversation;
     }
 }

@@ -83,7 +83,7 @@ public class AdminService : IAdminService
             }
             
             // Set sleep mode
-            var sleepDuration = duration > 0 ? TimeSpan.FromMinutes(duration) : null;
+            var sleepDuration = duration > 0 ? TimeSpan.FromMinutes(duration) : TimeSpan.FromMinutes(_options.DefaultSleepDurationMinutes);
             await _staminaService.ForceSleepModeAsync(sleepDuration);
             
             // Update Discord status

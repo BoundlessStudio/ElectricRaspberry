@@ -26,6 +26,11 @@ public class EmotionalImpact
     public EmotionalTrigger Trigger { get; set; }
     
     /// <summary>
+    /// Intensity of this emotional impact (0-1)
+    /// </summary>
+    public double Intensity => Significance;
+    
+    /// <summary>
     /// Creates a new emotional impact from a trigger
     /// </summary>
     public EmotionalImpact(EmotionalTrigger trigger)
@@ -43,5 +48,26 @@ public class EmotionalImpact
         
         // Default duration based on significance
         Duration = 5 + (20 * Significance);  // 5-25 minutes
+    }
+    
+    /// <summary>
+    /// Gets the dominant emotion from this impact
+    /// </summary>
+    public CoreEmotions GetDominantEmotion()
+    {
+        if (Changes.Count == 0)
+        {
+            return CoreEmotions.Neutral;
+        }
+        
+        var maxChange = Changes.OrderByDescending(c => Math.Abs(c.Value)).First();
+        
+        // Try to parse the emotion as a CoreEmotions enum
+        if (Enum.TryParse<CoreEmotions>(maxChange.Key, out var coreEmotion))
+        {
+            return coreEmotion;
+        }
+        
+        return CoreEmotions.Neutral;
     }
 }

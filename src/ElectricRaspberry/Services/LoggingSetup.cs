@@ -1,5 +1,6 @@
 using ElectricRaspberry.Configuration;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Core;
@@ -34,9 +35,9 @@ namespace ElectricRaspberry.Services
                 .Enrich.FromLogContext();
 
             // Add specific log level overrides
-            foreach (var override in loggingOptions.LogLevelOverrides)
+            foreach (var entry in loggingOptions.LogLevelOverrides)
             {
-                loggerConfiguration.MinimumLevel.Override(override.Key, override.Value);
+                loggerConfiguration.MinimumLevel.Override(entry.Key, entry.Value);
             }
 
             // Add enrichers based on configuration

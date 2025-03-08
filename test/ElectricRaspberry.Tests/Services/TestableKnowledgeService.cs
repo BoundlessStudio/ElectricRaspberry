@@ -17,7 +17,7 @@ namespace ElectricRaspberry.Tests.Services
     /// </summary>
     public interface IGremlinClientWrapper
     {
-        Task<IEnumerable<T>> SubmitAsync<T>(string query, Dictionary<string, object> parameters = null);
+        Task<IEnumerable<T>> SubmitAsync<T>(string query, Dictionary<string, object>? parameters = null);
     }
 
     /// <summary>

@@ -23,6 +23,11 @@ public class Conversation
     public DateTime LastActiveAt { get; set; }
     
     /// <summary>
+    /// Alias for LastActiveAt to maintain backward compatibility
+    /// </summary>
+    public DateTime LastActivityTime => LastActiveAt;
+    
+    /// <summary>
     /// The channel where this conversation is happening
     /// </summary>
     public ulong ChannelId { get; set; }

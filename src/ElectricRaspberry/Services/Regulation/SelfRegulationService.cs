@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using ElectricRaspberry.Models.Emotions;
 using ElectricRaspberry.Models.Regulation;
 using ElectricRaspberry.Services.Regulation.Configuration;
 using Microsoft.Extensions.Options;
@@ -158,12 +159,12 @@ public class SelfRegulationService : ISelfRegulationService
         if (emotionalState != null)
         {
             // Respond quicker when excited or angry, slower when sad or calm
-            if (emotionalState.GetEmotion(CoreEmotions.Joy) > 0.7 ||
-                emotionalState.GetEmotion(CoreEmotions.Anger) > 0.7)
+            if (emotionalState.GetEmotion(CoreEmotions.Joy.ToString()) > 0.7 ||
+                emotionalState.GetEmotion(CoreEmotions.Anger.ToString()) > 0.7)
             {
                 emotionalFactor = 0.8;
             }
-            else if (emotionalState.GetEmotion(CoreEmotions.Sadness) > 0.7)
+            else if (emotionalState.GetEmotion(CoreEmotions.Sadness.ToString()) > 0.7)
             {
                 emotionalFactor = 1.3;
             }

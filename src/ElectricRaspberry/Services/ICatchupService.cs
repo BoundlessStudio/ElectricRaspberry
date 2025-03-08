@@ -10,9 +10,9 @@ public interface ICatchupService
     /// <summary>
     /// Adds a message to the catchup queue for processing when the bot wakes up
     /// </summary>
-    /// <param name="messageEvent">The message event to queue</param>
+    /// <param name="queueItem">The catchup queue item to add</param>
     /// <returns>Task representing the operation</returns>
-    Task AddToCatchupQueueAsync(MessageEvent messageEvent);
+    Task AddToCatchupQueueAsync(CatchupQueueItem queueItem);
     
     /// <summary>
     /// Gets messages in the catchup queue
@@ -20,7 +20,7 @@ public interface ICatchupService
     /// <param name="count">Maximum number of messages to return</param>
     /// <param name="channelId">Optional channel ID to filter by</param>
     /// <returns>List of queued message events</returns>
-    Task<IEnumerable<MessageEvent>> GetCatchupQueueAsync(int count = 100, ulong? channelId = null);
+    Task<List<MessageEvent>> GetCatchupQueueAsync(int count = 100, ulong? channelId = null);
     
     /// <summary>
     /// Processes the catchup queue after waking up
@@ -30,27 +30,20 @@ public interface ICatchupService
     Task<int> ProcessCatchupQueueAsync(int maxBatchSize = 50);
     
     /// <summary>
-    /// Gets a summary of missed messages during sleep
-    /// </summary>
-    /// <returns>A summary text of missed activity</returns>
-    Task<string> GetMissedActivitySummaryAsync();
-    
-    /// <summary>
-    /// Marks a message as processed in the catchup queue
-    /// </summary>
-    /// <param name="messageId">The message ID to mark as processed</param>
-    /// <returns>True if successful, false otherwise</returns>
-    Task<bool> MarkAsProcessedAsync(ulong messageId);
-    
-    /// <summary>
     /// Clears the catchup queue
     /// </summary>
-    /// <returns>Number of messages cleared</returns>
-    Task<int> ClearCatchupQueueAsync();
+    /// <returns>Task representing the operation</returns>
+    Task ClearCatchupQueueAsync();
     
     /// <summary>
-    /// Prioritizes the catchup queue based on importance
+    /// Gets the size of the catchup queue
     /// </summary>
-    /// <returns>Task representing the operation</returns>
-    Task PrioritizeCatchupQueueAsync();
+    /// <returns>Number of items in the queue</returns>
+    Task<int> GetQueueSizeAsync();
+    
+    /// <summary>
+    /// Gets the number of unprocessed items in the catchup queue
+    /// </summary>
+    /// <returns>Number of unprocessed items</returns>
+    Task<int> GetUnprocessedQueueSizeAsync();
 }

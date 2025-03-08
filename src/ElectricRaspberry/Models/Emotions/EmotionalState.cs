@@ -13,12 +13,12 @@ public class EmotionalState
     public EmotionalState()
     {
         // Initialize with basic emotions at neutral values
-        Emotions[CoreEmotions.Joy] = 50;
-        Emotions[CoreEmotions.Sadness] = 50;
-        Emotions[CoreEmotions.Anger] = 50;
-        Emotions[CoreEmotions.Fear] = 50;
-        Emotions[CoreEmotions.Surprise] = 50;
-        Emotions[CoreEmotions.Disgust] = 50;
+        Emotions[CoreEmotions.Joy.ToString()] = 50;
+        Emotions[CoreEmotions.Sadness.ToString()] = 50;
+        Emotions[CoreEmotions.Anger.ToString()] = 50;
+        Emotions[CoreEmotions.Fear.ToString()] = 50;
+        Emotions[CoreEmotions.Surprise.ToString()] = 50;
+        Emotions[CoreEmotions.Disgust.ToString()] = 50;
     }
     
     /// <summary>
@@ -57,10 +57,37 @@ public class EmotionalState
     }
     
     /// <summary>
+    /// Gets the current intensity of a specific emotion
+    /// </summary>
+    /// <param name="emotion">The emotion to get</param>
+    /// <returns>The intensity value (0-100)</returns>
+    public double GetEmotion(CoreEmotions emotion)
+    {
+        return GetEmotion(emotion.ToString());
+    }
+    
+    /// <summary>
     /// Gets the most dominant emotion
     /// </summary>
+    /// <returns>The dominant emotion as a CoreEmotions enum</returns>
+    public CoreEmotions GetDominantEmotion()
+    {
+        string dominantKey = Emotions.OrderByDescending(e => e.Value).First().Key;
+        
+        // Try to parse the emotion name to the enum
+        if (Enum.TryParse<CoreEmotions>(dominantKey, out var emotion))
+        {
+            return emotion;
+        }
+        
+        return CoreEmotions.Neutral;
+    }
+    
+    /// <summary>
+    /// Gets the most dominant emotion as a string
+    /// </summary>
     /// <returns>The name of the dominant emotion</returns>
-    public string GetDominantEmotion()
+    public string GetDominantEmotionName()
     {
         return Emotions.OrderByDescending(e => e.Value).First().Key;
     }
@@ -72,11 +99,11 @@ public class EmotionalState
     public double GetValence()
     {
         // Positive emotions increase valence, negative emotions decrease it
-        double positive = GetEmotion(CoreEmotions.Joy) / 100.0;
-        double negative = (GetEmotion(CoreEmotions.Sadness) + 
-                          GetEmotion(CoreEmotions.Anger) + 
-                          GetEmotion(CoreEmotions.Fear) + 
-                          GetEmotion(CoreEmotions.Disgust)) / 400.0;
+        double positive = GetEmotion(CoreEmotions.Joy.ToString()) / 100.0;
+        double negative = (GetEmotion(CoreEmotions.Sadness.ToString()) + 
+                          GetEmotion(CoreEmotions.Anger.ToString()) + 
+                          GetEmotion(CoreEmotions.Fear.ToString()) + 
+                          GetEmotion(CoreEmotions.Disgust.ToString())) / 400.0;
         
         return positive - negative;
     }
@@ -88,10 +115,10 @@ public class EmotionalState
     public double GetArousal()
     {
         // High energy emotions increase arousal
-        double arousalSum = (GetEmotion(CoreEmotions.Joy) + 
-                            GetEmotion(CoreEmotions.Anger) + 
-                            GetEmotion(CoreEmotions.Fear) + 
-                            GetEmotion(CoreEmotions.Surprise)) / 400.0;
+        double arousalSum = (GetEmotion(CoreEmotions.Joy.ToString()) + 
+                            GetEmotion(CoreEmotions.Anger.ToString()) + 
+                            GetEmotion(CoreEmotions.Fear.ToString()) + 
+                            GetEmotion(CoreEmotions.Surprise.ToString())) / 400.0;
         
         return arousalSum;
     }

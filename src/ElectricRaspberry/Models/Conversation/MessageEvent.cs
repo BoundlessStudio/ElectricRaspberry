@@ -49,6 +49,21 @@ public class MessageEvent
     public string ConversationId { get; set; } = string.Empty;
     
     /// <summary>
+    /// The ID of the message
+    /// </summary>
+    public ulong MessageId => Message.Id;
+    
+    /// <summary>
+    /// The ID of the message author
+    /// </summary>
+    public ulong AuthorId => Message.Author.Id;
+    
+    /// <summary>
+    /// The ID of the channel where the message was sent
+    /// </summary>
+    public ulong ChannelId => Channel.Id;
+    
+    /// <summary>
     /// Creates a new message event from a Discord message
     /// </summary>
     public MessageEvent(IMessage message, DateTimeOffset timestamp)
@@ -85,5 +100,13 @@ public class MessageEvent
             var textChannel = Channel as ITextChannel;
             return $"#{textChannel?.Name ?? "channel"} in {(textChannel?.Guild.Name ?? "unknown")}";
         }
+    }
+    
+    /// <summary>
+    /// Checks if the specified user is mentioned in this message
+    /// </summary>
+    public bool IsMentioned(ulong userId)
+    {
+        return Message.MentionedUserIds.Contains(userId);
     }
 }

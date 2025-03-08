@@ -151,15 +151,15 @@ public record UserCommandExecutedNotification(SocketUserCommand Command) : Disco
 public record MessageCommandExecutedNotification(SocketMessageCommand Command) : DiscordEventNotification;
 
 // Auto moderation rule created event
-public record AutoModerationRuleCreatedNotification(SocketAutoModerationRule Rule) : DiscordEventNotification;
+public record AutoModerationRuleCreatedNotification(object Rule) : DiscordEventNotification;
 
 // Auto moderation rule updated event
-public record AutoModerationRuleUpdatedNotification(SocketAutoModerationRule OldRule, SocketAutoModerationRule NewRule) : DiscordEventNotification;
+public record AutoModerationRuleUpdatedNotification(object OldRule, object NewRule) : DiscordEventNotification;
 
 // Auto moderation rule deleted event
-public record AutoModerationRuleDeletedNotification(SocketAutoModerationRule Rule) : DiscordEventNotification;
+public record AutoModerationRuleDeletedNotification(object Rule) : DiscordEventNotification;
 
 // Auto moderation action executed event
-public record AutoModerationActionExecutedNotification(SocketAutoModerationActionExecutedData Data) : DiscordEventNotification;
+public record AutoModerationActionExecutedNotification(object Data) : DiscordEventNotification;
 
 #endregion

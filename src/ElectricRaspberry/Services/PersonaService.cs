@@ -103,9 +103,9 @@ namespace ElectricRaspberry.Services
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<string>> GetResponseTemplatesAsync(CoreEmotions emotion, string context = null)
+        public async Task<IEnumerable<string>> GetResponseTemplatesAsync(string emotion, string context = null)
         {
-            string key = emotion.ToString();
+            string key = emotion;
             
             // Try to get context-specific templates first
             if (!string.IsNullOrEmpty(context))

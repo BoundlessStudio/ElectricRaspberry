@@ -417,7 +417,7 @@ namespace ElectricRaspberry.Tests.Services
 
         #region Helper Methods
 
-        private void SetupConnectedVoiceState(IVoiceChannel voiceChannel = null)
+        private void SetupConnectedVoiceState(IVoiceChannel? voiceChannel = null)
         {
             // Create mock objects
             var audioClientMock = new Mock<IAudioClient>();

@@ -14,18 +14,22 @@ public class DiscordMessageHandler : INotificationHandler<MessageReceivedNotific
 {
     private readonly IObserverService _observerService;
     private readonly ILogger<DiscordMessageHandler> _logger;
+    private readonly DiscordSocketClient _discordClient;
     
     /// <summary>
     /// Creates a new instance of the Discord message handler
     /// </summary>
     /// <param name="observerService">Observer service for processing messages</param>
     /// <param name="logger">Logger</param>
+    /// <param name="discordClient">Discord client</param>
     public DiscordMessageHandler(
         IObserverService observerService,
-        ILogger<DiscordMessageHandler> logger)
+        ILogger<DiscordMessageHandler> logger,
+        DiscordSocketClient discordClient)
     {
         _observerService = observerService;
         _logger = logger;
+        _discordClient = discordClient;
     }
     
     /// <summary>
@@ -39,7 +43,7 @@ public class DiscordMessageHandler : INotificationHandler<MessageReceivedNotific
         var message = notification.Message;
         
         // Ignore messages from the bot itself
-        if (message.Author.Id == notification.BotUserId)
+        if (message.Author.Id == _discordClient.CurrentUser.Id)
         {
             return;
         }
@@ -62,22 +66,15 @@ public class DiscordMessageHandler : INotificationHandler<MessageReceivedNotific
     
     private MessageEvent ConvertToMessageEvent(SocketMessage message)
     {
-        // Extract all mentioned user IDs
-        var mentionedUserIds = message.MentionedUsers
-            .Select(u => u.Id.ToString())
-            .ToList();
+        // Create the message event using the constructor that takes IMessage and timestamp
+        var messageEvent = new MessageEvent(message, message.Timestamp);
         
-        // Create the message event
-        return new MessageEvent(
-            messageId: message.Id.ToString(),
-            authorId: message.Author.Id.ToString(),
-            authorName: message.Author.Username,
-            content: message.Content,
-            timestamp: message.Timestamp,
-            isDirectMessage: message.Channel is SocketDMChannel,
-            isMention: mentionedUserIds.Any(),
-            mentionedUserIds: mentionedUserIds,
-            attachments: message.Attachments.Select(a => a.Url).ToList()
-        );
+        // Set mentions flag if the bot is mentioned
+        if (_discordClient.CurrentUser != null && message.MentionedUsers.Any(u => u.Id == _discordClient.CurrentUser.Id))
+        {
+            messageEvent.MentionsBot = true;
+        }
+        
+        return messageEvent;
     }
 }

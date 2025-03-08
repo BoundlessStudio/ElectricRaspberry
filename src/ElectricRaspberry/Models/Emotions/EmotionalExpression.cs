@@ -44,8 +44,8 @@ public class EmotionalExpression
         IsPositive = state.IsPositive;
         
         // Set tone based on dominant emotion
-        string dominantEmotion = state.GetDominantEmotion();
-        Tone = MapEmotionToTone(dominantEmotion, state.GetEmotion(dominantEmotion));
+        CoreEmotions dominantEmotion = state.GetDominantEmotion();
+        Tone = MapEmotionToTone(dominantEmotion.ToString(), state.GetEmotion(dominantEmotion));
         
         // Set emojis based on emotional state
         SuggestedEmojis = GetEmojisForState(state);
@@ -57,46 +57,52 @@ public class EmotionalExpression
         ExpressionIntensity = state.GetArousal();
     }
     
-    private string MapEmotionToTone(string emotion, double intensity)
+    private string MapEmotionToTone(string emotionName, double intensity)
     {
         // Normalize intensity to 0-1
         double normalizedIntensity = intensity / 100.0;
         
-        return emotion switch
+        // Parse the emotion string to get the CoreEmotions enum
+        if (Enum.TryParse<CoreEmotions>(emotionName, out var emotion))
         {
-            CoreEmotions.Joy when normalizedIntensity > 0.7 => "enthusiastic",
-            CoreEmotions.Joy when normalizedIntensity > 0.4 => "cheerful",
-            CoreEmotions.Joy => "pleasant",
-            
-            CoreEmotions.Sadness when normalizedIntensity > 0.7 => "melancholic",
-            CoreEmotions.Sadness when normalizedIntensity > 0.4 => "somber",
-            CoreEmotions.Sadness => "subdued",
-            
-            CoreEmotions.Anger when normalizedIntensity > 0.7 => "irritated",
-            CoreEmotions.Anger when normalizedIntensity > 0.4 => "annoyed",
-            CoreEmotions.Anger => "stern",
-            
-            CoreEmotions.Fear when normalizedIntensity > 0.7 => "anxious",
-            CoreEmotions.Fear when normalizedIntensity > 0.4 => "cautious",
-            CoreEmotions.Fear => "concerned",
-            
-            CoreEmotions.Surprise when normalizedIntensity > 0.7 => "shocked",
-            CoreEmotions.Surprise when normalizedIntensity > 0.4 => "astonished",
-            CoreEmotions.Surprise => "curious",
-            
-            CoreEmotions.Disgust when normalizedIntensity > 0.7 => "repulsed",
-            CoreEmotions.Disgust when normalizedIntensity > 0.4 => "disapproving",
-            CoreEmotions.Disgust => "skeptical",
-            
-            _ => "neutral"
-        };
+            return emotion switch
+            {
+                CoreEmotions.Joy when normalizedIntensity > 0.7 => "enthusiastic",
+                CoreEmotions.Joy when normalizedIntensity > 0.4 => "cheerful",
+                CoreEmotions.Joy => "pleasant",
+                
+                CoreEmotions.Sadness when normalizedIntensity > 0.7 => "melancholic",
+                CoreEmotions.Sadness when normalizedIntensity > 0.4 => "somber",
+                CoreEmotions.Sadness => "subdued",
+                
+                CoreEmotions.Anger when normalizedIntensity > 0.7 => "irritated",
+                CoreEmotions.Anger when normalizedIntensity > 0.4 => "annoyed",
+                CoreEmotions.Anger => "stern",
+                
+                CoreEmotions.Fear when normalizedIntensity > 0.7 => "anxious",
+                CoreEmotions.Fear when normalizedIntensity > 0.4 => "cautious",
+                CoreEmotions.Fear => "concerned",
+                
+                CoreEmotions.Surprise when normalizedIntensity > 0.7 => "shocked",
+                CoreEmotions.Surprise when normalizedIntensity > 0.4 => "astonished",
+                CoreEmotions.Surprise => "curious",
+                
+                CoreEmotions.Disgust when normalizedIntensity > 0.7 => "repulsed",
+                CoreEmotions.Disgust when normalizedIntensity > 0.4 => "disapproving",
+                CoreEmotions.Disgust => "skeptical",
+                
+                _ => "neutral"
+            };
+        }
+        
+        return "neutral";
     }
     
     private List<string> GetEmojisForState(EmotionalState state)
     {
         var emojis = new List<string>();
-        string dominantEmotion = state.GetDominantEmotion();
-        double intensity = state.GetEmotion(dominantEmotion) / 100.0;
+        var dominantEmotion = state.GetDominantEmotion();
+        double intensity = state.GetEmotion(dominantEmotion.ToString()) / 100.0;
         
         // Only add emojis if intensity is significant
         if (intensity < 0.4) return emojis;
@@ -121,6 +127,9 @@ public class EmotionalExpression
                 break;
             case CoreEmotions.Disgust:
                 emojis.Add(intensity > 0.7 ? "🤢" : "😕");
+                break;
+            default:
+                // No emoji for neutral or unknown emotions
                 break;
         }
         

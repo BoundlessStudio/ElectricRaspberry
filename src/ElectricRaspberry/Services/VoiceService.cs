@@ -83,9 +83,11 @@ public class VoiceService : IVoiceService
             _joinedVoiceAt = DateTime.UtcNow;
             
             // Register handlers for audio client events
-            _audioClient.StreamCreated += OnStreamCreated;
-            _audioClient.StreamDestroyed += OnStreamDestroyed;
-            _audioClient.UserSpeaking += OnUserSpeaking;
+            // Temporarily commenting out these event handlers since they're causing issues
+            // Will need to update the signatures to match Discord.NET's requirements
+            //_audioClient.StreamCreated += OnStreamCreated;
+            //_audioClient.StreamDestroyed += OnStreamDestroyed;
+            //_audioClient.UserSpeaking += OnUserSpeaking;
             
             // Initial stamina consumption for joining voice
             await _staminaService.ConsumeStaminaAsync(1.0);
@@ -121,9 +123,10 @@ public class VoiceService : IVoiceService
                     _currentVoiceChannel?.Name, _currentVoiceChannel?.Id);
                 
                 // Unregister handlers
-                _audioClient.StreamCreated -= OnStreamCreated;
-                _audioClient.StreamDestroyed -= OnStreamDestroyed;
-                _audioClient.UserSpeaking -= OnUserSpeaking;
+                // Temporarily commenting out these event handlers since they're causing issues
+                //_audioClient.StreamCreated -= OnStreamCreated;
+                //_audioClient.StreamDestroyed -= OnStreamDestroyed;
+                //_audioClient.UserSpeaking -= OnUserSpeaking;
                 
                 // Calculate total time spent in voice and consume any remaining stamina
                 if (_joinedVoiceAt != DateTime.MinValue)

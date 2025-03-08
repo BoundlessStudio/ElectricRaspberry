@@ -40,7 +40,7 @@ namespace ElectricRaspberry.Services
         /// <param name="emotion">The emotional state to get responses for</param>
         /// <param name="context">Optional context tag for more specific responses</param>
         /// <returns>A list of response templates that can be used</returns>
-        Task<IEnumerable<string>> GetResponseTemplatesAsync(CoreEmotions emotion, string context = null);
+        Task<IEnumerable<string>> GetResponseTemplatesAsync(string emotion, string context = null);
 
         /// <summary>
         /// Updates the bot's interests based on interaction

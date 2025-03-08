@@ -232,6 +232,16 @@ public class KnowledgeService : IKnowledgeService
         return userRelationship;
     }
     
+    public async Task<UserRelationship> GetUserRelationshipAsync(string userId)
+    {
+        if (ulong.TryParse(userId, out ulong id))
+        {
+            return await GetUserRelationshipAsync(id);
+        }
+        
+        return new UserRelationship(0, "Unknown", "Unknown", "unknown", 0);
+    }
+    
     public async Task<bool> UpdateUserRelationshipAsync(ulong userId, string relationshipType, double strength)
     {
         try
@@ -708,6 +718,185 @@ public class KnowledgeService : IKnowledgeService
         }
     }
     
+    public async Task<RelationshipEdge> RecordInteractionAsync(ulong userId)
+    {
+        // Get bot vertex
+        var botVertex = await GetBotVertexAsync();
+        if (botVertex == null)
+        {
+            _logger.LogWarning("Bot vertex not found, cannot record interaction");
+            return null;
+        }
+        
+        // Record interaction with bot as source
+        return await RecordInteractionAsync(0, userId, "interaction");
+    }
+    
+    public async Task<RelationshipEdge> RecordInteractionAsync(string userId)
+    {
+        if (ulong.TryParse(userId, out ulong id))
+        {
+            return await RecordInteractionAsync(id);
+        }
+        
+        _logger.LogWarning("Invalid user ID format: {UserId}", userId);
+        return null;
+    }
+    
+    public async Task<IEnumerable<T>> GetEdgesByTypeAsync<T>() where T : GraphEdge
+    {
+        await _graphLock.WaitAsync();
+        try
+        {
+            // Query for edges of the specified type
+            var edgeLabel = typeof(T).GetField("EdgeLabel")?.GetValue(null) as string;
+            if (string.IsNullOrEmpty(edgeLabel))
+            {
+                _logger.LogWarning("Edge type {EdgeType} does not have an EdgeLabel static field", typeof(T).Name);
+                return Enumerable.Empty<T>();
+            }
+            
+            var query = $"g.E().hasLabel('{edgeLabel}')";
+            var results = await SubmitGremlinQueryWithRetryAsync<T>(query);
+            
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting edges of type {EdgeType}", typeof(T).Name);
+            return Enumerable.Empty<T>();
+        }
+        finally
+        {
+            _graphLock.Release();
+        }
+    }
+    
+    public async Task<IEnumerable<T>> GetEdgesByTypeAsync<T>(Func<T, bool> predicate) where T : GraphEdge
+    {
+        var edges = await GetEdgesByTypeAsync<T>();
+        return edges.Where(predicate);
+    }
+    
+    public async Task<T> GetVertexByIdAsync<T>(string id) where T : GraphVertex
+    {
+        await _graphLock.WaitAsync();
+        try
+        {
+            // Query for vertex by ID
+            var query = $"g.V('{id}')";
+            var results = await SubmitGremlinQueryWithRetryAsync<T>(query);
+            
+            return results.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting vertex with ID {Id}", id);
+            return null;
+        }
+        finally
+        {
+            _graphLock.Release();
+        }
+    }
+    
+    public async Task<InterestEdge> RecordInterestAsync(string topicName, double level)
+    {
+        await _graphLock.WaitAsync();
+        try
+        {
+            // Get bot vertex
+            var botVertex = await GetBotVertexAsync();
+            if (botVertex == null)
+            {
+                _logger.LogWarning("Bot vertex not found, cannot record interest");
+                return null;
+            }
+            
+            // Get or create topic vertex
+            var topic = await GetTopicAsync(topicName);
+            if (topic == null)
+            {
+                // Create new topic
+                topic = new TopicVertex(topicName);
+                topic = await UpsertTopicAsync(topic);
+                
+                if (topic == null)
+                {
+                    _logger.LogWarning("Failed to create topic {TopicName}", topicName);
+                    return null;
+                }
+            }
+            
+            // Record topic mention
+            topic.RecordMention();
+            await UpsertTopicAsync(topic);
+            
+            // Check for existing interest edge from bot to topic
+            var edgeQuery = $"g.V('{botVertex.Id}').outE('{InterestEdge.EdgeLabel}').where(inV().has('id', '{topic.Id}'))";
+            var edges = await SubmitGremlinQueryWithRetryAsync<InterestEdge>(edgeQuery);
+            var edge = edges.FirstOrDefault();
+            
+            if (edge != null)
+            {
+                // Update existing edge
+                edge.Level = level;
+                edge.RecordObservation("bot");
+                
+                // Update the edge
+                var updateQuery = $"g.E('{edge.Id}')";
+                updateQuery += $".property('observationCount', {edge.ObservationCount})";
+                updateQuery += $".property('lastObservedAt', '{edge.LastObservedAt:o}')";
+                updateQuery += $".property('level', {edge.Level})";
+                updateQuery += $".property('updatedAt', '{DateTime.UtcNow:o}')";
+                
+                await SubmitGremlinQueryWithRetryAsync<dynamic>(updateQuery);
+                
+                // Refresh the edge
+                var refreshQuery = $"g.E('{edge.Id}')";
+                var refreshResults = await SubmitGremlinQueryWithRetryAsync<InterestEdge>(refreshQuery);
+                var refreshedEdge = refreshResults.FirstOrDefault();
+                
+                return refreshedEdge ?? edge;
+            }
+            else
+            {
+                // Create new edge
+                var newEdge = new InterestEdge(botVertex.Id, topic.Id, "bot");
+                newEdge.Level = level;
+                
+                var addQuery = $"g.V('{botVertex.Id}').addE('{InterestEdge.EdgeLabel}').to(g.V('{topic.Id}'))";
+                addQuery += $".property('id', '{newEdge.Id}')";
+                addQuery += $".property('level', {level})";
+                addQuery += $".property('firstObservedAt', '{DateTime.UtcNow:o}')";
+                addQuery += $".property('lastObservedAt', '{DateTime.UtcNow:o}')";
+                addQuery += $".property('observationCount', 1)";
+                addQuery += $".property('source', 'bot')";
+                addQuery += $".property('strength', {level})";
+                addQuery += $".property('createdAt', '{DateTime.UtcNow:o}')";
+                addQuery += $".property('updatedAt', '{DateTime.UtcNow:o}')";
+                
+                await SubmitGremlinQueryWithRetryAsync<dynamic>(addQuery);
+                
+                // Refresh the edge
+                var refreshQuery = $"g.E('{newEdge.Id}')";
+                var refreshResults = await SubmitGremlinQueryWithRetryAsync<InterestEdge>(refreshQuery);
+                var refreshedEdge = refreshResults.FirstOrDefault();
+                
+                return refreshedEdge ?? newEdge;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error recording interest in topic {TopicName}", topicName);
+            return null;
+        }
+        finally
+        {
+            _graphLock.Release();
+        }
+    }
+    
     public async Task<InterestEdge> RecordInterestAsync(ulong userId, string topicName, string source)
     {
         await _graphLock.WaitAsync();
@@ -1057,7 +1246,7 @@ public class KnowledgeService : IKnowledgeService
                 var results = await _gremlinClient.SubmitAsync<T>(query);
                 return results;
             }
-            catch (ResponseException ex) when (ex.StatusCode == 409 || ex.StatusCode == 429)
+            catch (ResponseException ex) when ((int)ex.StatusCode == 409 || (int)ex.StatusCode == 429)
             {
                 // Conflict or rate limiting error - retry with backoff
                 lastException = ex;
@@ -1077,6 +1266,39 @@ public class KnowledgeService : IKnowledgeService
             retryCount, query);
         
         return Enumerable.Empty<T>();
+    }
+    
+    public async Task ResetKnowledgeGraphAsync()
+    {
+        await _graphLock.WaitAsync();
+        try
+        {
+            _logger.LogWarning("Resetting knowledge graph - all data will be lost");
+            
+            // Delete all vertices and edges
+            var query = "g.V().drop()";
+            await SubmitGremlinQueryWithRetryAsync<dynamic>(query);
+            
+            // Clear caches
+            _personCache.Clear();
+            _topicCache.Clear();
+            
+            // Reinitialize the graph
+            await InitializeGraphAsync();
+            
+            _logger.LogInformation("Knowledge graph reset completed");
+            
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting knowledge graph");
+            throw;
+        }
+        finally
+        {
+            _graphLock.Release();
+        }
     }
     
     private string EscapeStringForGremlin(string s)

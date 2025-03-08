@@ -48,7 +48,7 @@ public class EventPrioritizationService : IEventPrioritizationService
         var priority = EventPriority.Normal;
         
         // Check if this is a direct mention of the bot
-        if (messageEvent.IsMention && messageEvent.MentionedUserIds.Contains(botUserId))
+        if (messageEvent.MentionsBot || messageEvent.IsMentioned(Convert.ToUInt64(botUserId)))
         {
             priority = EventPriority.Critical;
             _logger.LogInformation("Prioritized direct mention from {UserId} as {Priority}", 

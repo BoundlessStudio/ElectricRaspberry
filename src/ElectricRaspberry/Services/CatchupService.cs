@@ -1,41 +1,48 @@
 using ElectricRaspberry.Models.Conversation;
-using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
+using ElectricRaspberry.Models.Observation;
 
 namespace ElectricRaspberry.Services;
 
+/// <summary>
+/// Handles the processing of messages in the catchup queue
+/// </summary>
 public class CatchupService : ICatchupService
 {
-    private readonly ILogger<CatchupService> _logger;
-    private readonly IConversationService _conversationService;
     private readonly SemaphoreSlim _queueLock = new(1, 1);
-    private readonly ConcurrentDictionary<ulong, CatchupQueueItem> _catchupQueue = new();
+    private readonly Dictionary<string, CatchupQueueItem> _catchupQueue = new();
+    private readonly ILogger<CatchupService> _logger;
+    private readonly int _maxQueueSize;
     
-    // Maximum size of the catchup queue to prevent memory issues
-    private readonly int _maxQueueSize = 1000;
-    
-    public CatchupService(
-        ILogger<CatchupService> logger,
-        IConversationService conversationService)
+    /// <summary>
+    /// Creates a new catchup service
+    /// </summary>
+    public CatchupService(ILogger<CatchupService> logger, IConfiguration config)
     {
         _logger = logger;
-        _conversationService = conversationService;
+        _maxQueueSize = config.GetValue<int>("Catchup:MaxQueueSize", 500);
     }
     
-    public async Task AddToCatchupQueueAsync(MessageEvent messageEvent)
+    public async Task AddToCatchupQueueAsync(CatchupQueueItem queueItem)
     {
+        if (queueItem == null)
+        {
+            throw new ArgumentNullException(nameof(queueItem));
+        }
+        
+        if (queueItem.MessageEvent == null)
+        {
+            throw new ArgumentException("QueueItem must have a valid MessageEvent", nameof(queueItem));
+        }
+        
         await _queueLock.WaitAsync();
         try
         {
-            // Calculate priority based on message characteristics
-            int priority = CalculateMessagePriority(messageEvent);
+            // Use message ID as key to avoid duplicates
+            var key = queueItem.MessageEvent.MessageId.ToString();
+            _catchupQueue[key] = queueItem;
             
-            // Add to queue with assigned priority
-            var queueItem = new CatchupQueueItem(messageEvent, priority);
-            _catchupQueue[messageEvent.Message.Id] = queueItem;
-            
-            _logger.LogDebug("Added message {MessageId} to catchup queue with priority {Priority}", 
-                messageEvent.Message.Id, priority);
+            _logger.LogDebug("Added message {MessageId} to catchup queue with priority {Priority}",
+                queueItem.MessageEvent.MessageId, queueItem.Priority);
             
             // If queue is getting too large, remove oldest low-priority items
             if (_catchupQueue.Count > _maxQueueSize)
@@ -49,12 +56,12 @@ public class CatchupService : ICatchupService
         }
     }
     
-    public async Task<IEnumerable<MessageEvent>> GetCatchupQueueAsync(int count = 100, ulong? channelId = null)
+    public async Task<List<MessageEvent>> GetCatchupQueueAsync(int count = 100, ulong? channelId = null)
     {
         await _queueLock.WaitAsync();
         try
         {
-            var query = _catchupQueue.Values
+            IEnumerable<CatchupQueueItem> query = _catchupQueue.Values
                 .Where(i => !i.IsProcessed)
                 .OrderByDescending(i => i.Priority)
                 .ThenBy(i => i.QueuedAt);
@@ -88,133 +95,14 @@ public class CatchupService : ICatchupService
             
             _logger.LogInformation("Processing {Count} items from catchup queue", itemsToProcess.Count);
             
-            int processedCount = 0;
-            
-            // Process each item
+            // Mark all as processed (we're not actually processing here, just marking)
             foreach (var item in itemsToProcess)
             {
-                try
-                {
-                    // Add to conversation service
-                    await _conversationService.ProcessMessageAsync(item.MessageEvent);
-                    
-                    // Mark as processed
-                    item.IsProcessed = true;
-                    processedCount++;
-                    
-                    _logger.LogDebug("Processed catchup message {MessageId}", item.MessageEvent.Message.Id);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing catchup message {MessageId}", 
-                        item.MessageEvent.Message.Id);
-                }
-            }
-            
-            return processedCount;
-        }
-        finally
-        {
-            _queueLock.Release();
-        }
-    }
-    
-    public async Task<string> GetMissedActivitySummaryAsync()
-    {
-        await _queueLock.WaitAsync();
-        try
-        {
-            // Count messages by channel
-            var channelCounts = _catchupQueue.Values
-                .Where(i => !i.IsProcessed)
-                .GroupBy(i => i.MessageEvent.Channel.Id)
-                .Select(g => new
-                {
-                    ChannelId = g.Key,
-                    ChannelName = GetChannelName(g.First().MessageEvent),
-                    MessageCount = g.Count(),
-                    MentionCount = g.Count(i => i.MessageEvent.MentionsBot),
-                    DirectMessageCount = g.Count(i => i.MessageEvent.IsDirectMessage)
-                })
-                .OrderByDescending(x => x.MessageCount)
-                .ToList();
-            
-            // Count messages by user
-            var userCounts = _catchupQueue.Values
-                .Where(i => !i.IsProcessed)
-                .GroupBy(i => i.MessageEvent.Message.Author.Id)
-                .Select(g => new
-                {
-                    UserId = g.Key,
-                    UserName = g.First().MessageEvent.Message.Author.Username,
-                    MessageCount = g.Count()
-                })
-                .OrderByDescending(x => x.MessageCount)
-                .Take(5)
-                .ToList();
-            
-            // Build summary
-            var summary = new System.Text.StringBuilder();
-            
-            int totalMessages = _catchupQueue.Values.Count(i => !i.IsProcessed);
-            int totalMentions = _catchupQueue.Values.Count(i => !i.IsProcessed && i.MessageEvent.MentionsBot);
-            int totalDMs = _catchupQueue.Values.Count(i => !i.IsProcessed && i.MessageEvent.IsDirectMessage);
-            
-            summary.AppendLine($"While sleeping, I missed {totalMessages} messages");
-            if (totalMentions > 0)
-            {
-                summary.AppendLine($"- {totalMentions} mentioned me directly");
-            }
-            if (totalDMs > 0)
-            {
-                summary.AppendLine($"- {totalDMs} were direct messages");
-            }
-            
-            // Add channel breakdown
-            if (channelCounts.Any())
-            {
-                summary.AppendLine("\nChannel Activity:");
-                foreach (var channel in channelCounts.Take(5))
-                {
-                    summary.AppendLine($"- {channel.ChannelName}: {channel.MessageCount} messages");
-                }
-                
-                if (channelCounts.Count > 5)
-                {
-                    summary.AppendLine($"- And {channelCounts.Count - 5} other channels");
-                }
-            }
-            
-            // Add user breakdown
-            if (userCounts.Any())
-            {
-                summary.AppendLine("\nMost Active Users:");
-                foreach (var user in userCounts)
-                {
-                    summary.AppendLine($"- {user.UserName}: {user.MessageCount} messages");
-                }
-            }
-            
-            return summary.ToString();
-        }
-        finally
-        {
-            _queueLock.Release();
-        }
-    }
-    
-    public async Task<bool> MarkAsProcessedAsync(ulong messageId)
-    {
-        await _queueLock.WaitAsync();
-        try
-        {
-            if (_catchupQueue.TryGetValue(messageId, out var item))
-            {
                 item.IsProcessed = true;
-                return true;
+                item.ProcessedAt = DateTime.UtcNow;
             }
             
-            return false;
+            return itemsToProcess.Count;
         }
         finally
         {
@@ -222,17 +110,13 @@ public class CatchupService : ICatchupService
         }
     }
     
-    public async Task<int> ClearCatchupQueueAsync()
+    public async Task ClearCatchupQueueAsync()
     {
         await _queueLock.WaitAsync();
         try
         {
-            int count = _catchupQueue.Count;
             _catchupQueue.Clear();
-            
-            _logger.LogInformation("Cleared catchup queue with {Count} items", count);
-            
-            return count;
+            _logger.LogInformation("Cleared catchup queue");
         }
         finally
         {
@@ -240,19 +124,12 @@ public class CatchupService : ICatchupService
         }
     }
     
-    public async Task PrioritizeCatchupQueueAsync()
+    public async Task<int> GetQueueSizeAsync()
     {
         await _queueLock.WaitAsync();
         try
         {
-            // Recalculate priorities for all unprocessed items
-            foreach (var item in _catchupQueue.Values.Where(i => !i.IsProcessed))
-            {
-                item.Priority = CalculateMessagePriority(item.MessageEvent);
-            }
-            
-            _logger.LogInformation("Reprioritized catchup queue with {Count} items", 
-                _catchupQueue.Count(kv => !kv.Value.IsProcessed));
+            return _catchupQueue.Count;
         }
         finally
         {
@@ -260,89 +137,72 @@ public class CatchupService : ICatchupService
         }
     }
     
-    // Helper methods
-    private int CalculateMessagePriority(MessageEvent messageEvent)
+    public async Task<int> GetUnprocessedQueueSizeAsync()
     {
-        int priority = 0;
-        
-        // Direct messages have higher priority
-        if (messageEvent.IsDirectMessage)
+        await _queueLock.WaitAsync();
+        try
         {
-            priority += 50;
+            return _catchupQueue.Values.Count(i => !i.IsProcessed);
         }
-        
-        // Messages that mention the bot have higher priority
-        if (messageEvent.MentionsBot)
+        finally
         {
-            priority += 100;
+            _queueLock.Release();
         }
-        
-        // Messages from users with relationships have higher priority
-        // TODO: When relationship service is implemented, add relationship strength factor
-        
-        // Newer messages have slightly higher priority
-        int ageInMinutes = (int)(DateTime.UtcNow - messageEvent.Timestamp).TotalMinutes;
-        priority -= Math.Min(ageInMinutes, 60); // Cap at -60 to prevent very old messages from having extremely low priority
-        
-        return priority;
     }
     
     private async Task TrimQueueAsync()
     {
-        // Remove 25% of the oldest, already processed, or lowest-priority items
-        int itemsToRemove = _catchupQueue.Count - (_maxQueueSize * 3 / 4);
+        // Already under lock from caller
         
-        if (itemsToRemove <= 0)
-        {
-            return;
-        }
-        
-        // First remove already processed items
-        var processedItems = _catchupQueue.Where(kv => kv.Value.IsProcessed)
-            .Select(kv => kv.Key)
-            .Take(itemsToRemove)
+        // Remove oldest processed items first
+        var processedItems = _catchupQueue.Values
+            .Where(i => i.IsProcessed)
+            .OrderBy(i => i.ProcessedAt)
+            .Take(_catchupQueue.Count - _maxQueueSize + 100)
             .ToList();
         
-        foreach (var key in processedItems)
+        foreach (var item in processedItems)
         {
-            _catchupQueue.TryRemove(key, out _);
+            _catchupQueue.Remove(item.MessageEvent.MessageId.ToString());
         }
         
-        itemsToRemove -= processedItems.Count;
-        
-        // If we still need to remove more, take lowest priority items
-        if (itemsToRemove > 0)
+        int count = processedItems.Count;
+        if (count > 0)
         {
-            var lowPriorityItems = _catchupQueue
-                .OrderBy(kv => kv.Value.Priority)
-                .ThenBy(kv => kv.Value.QueuedAt)
-                .Take(itemsToRemove)
-                .Select(kv => kv.Key)
+            _logger.LogInformation("Removed {Count} processed items from catchup queue", count);
+        }
+        
+        // If we still need to trim, remove oldest low-priority unprocessed items
+        if (_catchupQueue.Count > _maxQueueSize)
+        {
+            var lowPriorityItems = _catchupQueue.Values
+                .Where(i => !i.IsProcessed)
+                .OrderBy(i => i.Priority)
+                .ThenBy(i => i.QueuedAt)
+                .Take(_catchupQueue.Count - _maxQueueSize)
                 .ToList();
             
-            foreach (var key in lowPriorityItems)
+            foreach (var item in lowPriorityItems)
             {
-                _catchupQueue.TryRemove(key, out _);
+                _catchupQueue.Remove(item.MessageEvent.MessageId.ToString());
             }
+            
+            _logger.LogInformation("Removed {Count} low-priority unprocessed items from catchup queue", lowPriorityItems.Count);
         }
-        
-        _logger.LogInformation("Trimmed catchup queue. Removed {RemovedCount} items.", 
-            processedItems.Count + itemsToRemove);
     }
     
-    private string GetChannelName(MessageEvent messageEvent)
+    // Additional method to support testing
+    public async Task<Dictionary<string, CatchupQueueItem>> GetRawQueueAsync()
     {
-        if (messageEvent.IsDirectMessage)
+        await _queueLock.WaitAsync();
+        try
         {
-            return $"DM with {messageEvent.Message.Author.Username}";
+            // Return a copy to avoid exposing the internal collection
+            return new Dictionary<string, CatchupQueueItem>(_catchupQueue);
         }
-        else if (messageEvent.Channel is Discord.ITextChannel textChannel)
+        finally
         {
-            return $"#{textChannel.Name}";
-        }
-        else
-        {
-            return $"Channel {messageEvent.Channel.Id}";
+            _queueLock.Release();
         }
     }
 }

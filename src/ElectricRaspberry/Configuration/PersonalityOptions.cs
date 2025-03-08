@@ -6,6 +6,11 @@ namespace ElectricRaspberry.Configuration
     public class PersonalityOptions
     {
         public const string ConfigSection = "Personality";
+        
+        /// <summary>
+        /// The bot's user ID
+        /// </summary>
+        public string BotUserId { get; set; } = string.Empty;
 
         /// <summary>
         /// Personality adaptation rate (0.0-1.0, higher values mean faster adaptation)

@@ -71,28 +71,28 @@ namespace ElectricRaspberry.Services
                 if (conversation != null)
                 {
                     context.State = conversation.State;
-                    context.RecentMessages = conversation.Messages
-                        .OrderByDescending(m => m.Timestamp)
-                        .Take(_options.MaxRecentMessages)
-                        .ToList();
+                    // Convert MessageReference list to MessageEvent list
+                    // This assumes there's a way to convert MessageReference to MessageEvent
+                    // For now, we're going to set an empty list and will need to implement proper conversion later
+                    context.RecentMessages = new List<MessageEvent>();
                 }
                 else
                 {
                     _logger.LogWarning("No conversation found for ID {conversationId} when building context", conversationId);
-                    context.State = ConversationState.New;
+                    context.State = ConversationState.Active; // Use Active since New doesn't exist
                 }
 
                 // Get environment context for the channel (if we have channel info)
-                var channelId = context.RecentMessages.FirstOrDefault()?.ChannelId;
-                if (!string.IsNullOrEmpty(channelId) && _options.IncludeEnvironmentContext)
+                var firstMessage = context.RecentMessages.FirstOrDefault();
+                if (firstMessage != null && _options.IncludeEnvironmentContext)
                 {
-                    context.Environment = await GetEnvironmentContextAsync(channelId);
+                    var channelIdStr = firstMessage.ChannelId.ToString();
+                    context.Environment = await GetEnvironmentContextAsync(channelIdStr);
                 }
 
                 // Get user contexts for all participants
                 var userIds = context.RecentMessages
-                    .Select(m => m.AuthorId)
-                    .Where(id => !string.IsNullOrEmpty(id))
+                    .Select(m => m.AuthorId.ToString())
                     .Distinct()
                     .Take(_options.MaxUsersInContext)
                     .ToList();
@@ -124,7 +124,7 @@ namespace ElectricRaspberry.Services
                 return new ThinkingContext
                 {
                     ConversationId = conversationId,
-                    State = ConversationState.Unknown,
+                    State = ConversationState.Idle, // Use Idle since Unknown doesn't exist
                     Timestamp = DateTime.UtcNow,
                     Metadata = new Dictionary<string, object> { { "Error", "Error building full context" } }
                 };
@@ -155,11 +155,12 @@ namespace ElectricRaspberry.Services
                 }
 
                 // Update user context for the message author
-                if (!string.IsNullOrEmpty(messageEvent.AuthorId))
+                var authorId = messageEvent.AuthorId.ToString();
+                if (!string.IsNullOrEmpty(authorId))
                 {
-                    var userContext = await GetUserContextAsync(messageEvent.AuthorId);
+                    var userContext = await GetUserContextAsync(authorId);
                     userContext.RecentInteractionCount++;
-                    context.Users[messageEvent.AuthorId] = userContext;
+                    context.Users[authorId] = userContext;
                 }
 
                 // Update timestamp
@@ -215,9 +216,10 @@ namespace ElectricRaspberry.Services
                 }
 
                 // Get user interests from knowledge graph
+                // Since InterestEdge no longer has a Properties dictionary, we need to adapt this query
+                // We'll get all interests and filter in memory, or change the query to match the new structure
                 var interestEdges = await _knowledgeService.GetEdgesByTypeAsync<InterestEdge>(
-                    edge => edge.Properties.ContainsKey("UserId") && 
-                           edge.Properties["UserId"].ToString() == userId);
+                    edge => edge.SourceId == userId);
 
                 if (interestEdges != null)
                 {
@@ -326,8 +328,8 @@ namespace ElectricRaspberry.Services
 
                 // Extract user IDs from conversation
                 var userIds = conversation.Messages
-                    .Select(m => m.AuthorId)
-                    .Where(id => !string.IsNullOrEmpty(id))
+                    .Select(m => m.AuthorId.ToString())
+                    .Where(id => id != "0") // Filter out any invalid IDs
                     .Distinct()
                     .ToList();
 

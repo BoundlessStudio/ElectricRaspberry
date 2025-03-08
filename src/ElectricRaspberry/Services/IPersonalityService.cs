@@ -13,6 +13,12 @@ namespace ElectricRaspberry.Services
         /// </summary>
         /// <returns>Dictionary of personality traits and their strength values (0.0-1.0)</returns>
         Task<Dictionary<string, double>> GetPersonalityProfileAsync();
+        
+        /// <summary>
+        /// Gets the current personality traits (alias for GetPersonalityProfileAsync)
+        /// </summary>
+        /// <returns>Dictionary of personality traits and their strength values (0.0-1.0)</returns>
+        Task<Dictionary<string, double>> GetCurrentTraitsAsync();
 
         /// <summary>
         /// Updates the personality based on an interaction

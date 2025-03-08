@@ -112,6 +112,51 @@ public interface IKnowledgeService
     Task<RelationshipEdge> RecordInteractionAsync(ulong sourceUserId, ulong targetUserId, string type);
     
     /// <summary>
+    /// Records an interaction with the bot
+    /// </summary>
+    /// <param name="userId">The user ID</param>
+    /// <returns>The updated relationship</returns>
+    Task<RelationshipEdge> RecordInteractionAsync(ulong userId);
+    
+    /// <summary>
+    /// Records an interaction with the bot
+    /// </summary>
+    /// <param name="userId">The user ID as a string</param>
+    /// <returns>The updated relationship</returns>
+    Task<RelationshipEdge> RecordInteractionAsync(string userId);
+    
+    /// <summary>
+    /// Gets edges by type
+    /// </summary>
+    /// <typeparam name="T">The edge type</typeparam>
+    /// <returns>The edges of the specified type</returns>
+    Task<IEnumerable<T>> GetEdgesByTypeAsync<T>() where T : GraphEdge;
+    
+    /// <summary>
+    /// Gets edges by type with a predicate
+    /// </summary>
+    /// <typeparam name="T">The edge type</typeparam>
+    /// <param name="predicate">The predicate to filter edges by</param>
+    /// <returns>The edges matching the predicate</returns>
+    Task<IEnumerable<T>> GetEdgesByTypeAsync<T>(Func<T, bool> predicate) where T : GraphEdge;
+    
+    /// <summary>
+    /// Gets a vertex by ID
+    /// </summary>
+    /// <typeparam name="T">The vertex type</typeparam>
+    /// <param name="id">The vertex ID</param>
+    /// <returns>The vertex if found, null otherwise</returns>
+    Task<T> GetVertexByIdAsync<T>(string id) where T : GraphVertex;
+    
+    /// <summary>
+    /// Records interest in a topic with a specific level
+    /// </summary>
+    /// <param name="topicName">The topic name</param>
+    /// <param name="level">The interest level</param>
+    /// <returns>The updated interest</returns>
+    Task<InterestEdge> RecordInterestAsync(string topicName, double level);
+    
+    /// <summary>
     /// Records an interest for a person
     /// </summary>
     /// <param name="userId">The user ID</param>

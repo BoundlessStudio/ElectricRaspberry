@@ -61,4 +61,10 @@ public interface IStaminaService
     /// </summary>
     /// <returns>A task representing the asynchronous operation</returns>
     Task ResetStaminaAsync();
+    
+    /// <summary>
+    /// Gets the maximum stamina value
+    /// </summary>
+    /// <returns>Maximum stamina value</returns>
+    Task<double> GetMaxStaminaAsync();
 }

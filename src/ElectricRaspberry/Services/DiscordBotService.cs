@@ -120,14 +120,13 @@ public class DiscordBotService : BackgroundService
         _client.UserUnbanned += (user, guild) => PublishEvent(new UserUnbannedNotification(user, guild));
         _client.UserVoiceStateUpdated += (user, oldState, newState) => 
             PublishEvent(new UserVoiceStateUpdatedNotification(user, oldState, newState));
-        _client.UserVoiceServerUpdated += (user, server) => 
-            PublishEvent(new UserVoiceServerUpdatedNotification(user, server));
+        // Removed UserVoiceServerUpdated event as it's not available in the current Discord.NET API
         _client.PresenceUpdated += (user, oldPresence, newPresence) => 
             PublishEvent(new PresenceUpdatedNotification(user, oldPresence, newPresence));
         #endregion
 
         #region Other Events
-        _client.TypingStarted += (user, channel) => PublishEvent(new TypingStartedNotification(user, channel));
+        // Removed TypingStarted event as it's not available in the current Discord.NET API
         _client.LatencyUpdated += (oldLatency, newLatency) => 
             PublishEvent(new LatencyUpdatedNotification(oldLatency, newLatency));
         
@@ -139,14 +138,7 @@ public class DiscordBotService : BackgroundService
         _client.UserCommandExecuted += (command) => PublishEvent(new UserCommandExecutedNotification(command));
         _client.MessageCommandExecuted += (command) => PublishEvent(new MessageCommandExecutedNotification(command));
         
-        _client.AutoModerationRuleCreated += (rule) => 
-            PublishEvent(new AutoModerationRuleCreatedNotification(rule));
-        _client.AutoModerationRuleUpdated += (oldRule, newRule) => 
-            PublishEvent(new AutoModerationRuleUpdatedNotification(oldRule, newRule));
-        _client.AutoModerationRuleDeleted += (rule) => 
-            PublishEvent(new AutoModerationRuleDeletedNotification(rule));
-        _client.AutoModerationActionExecuted += (data) => 
-            PublishEvent(new AutoModerationActionExecutedNotification(data));
+        // Removed AutoModeration events as they're not available in the current Discord.NET API
         #endregion
     }
 

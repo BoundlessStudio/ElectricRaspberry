@@ -218,6 +218,11 @@ public class StaminaService : IStaminaService
         }
     }
     
+    public async Task<double> GetMaxStaminaAsync()
+    {
+        return _staminaSettings.MaxStamina;
+    }
+    
     private async Task UpdateStaminaFromLastCheckAsync()
     {
         // Calculate time since last update
@@ -258,8 +263,16 @@ public class StaminaService : IStaminaService
             _isSleeping = true;
             
             // Set Discord status to sleeping
-            await _discordClient.SetStatusAsync(UserStatus.Idle);
-            await _discordClient.SetActivityAsync(new Game("Sleeping... Zzz", ActivityType.Playing));
+            var client = _discordClient as Discord.WebSocket.DiscordSocketClient;
+            if (client != null)
+            {
+                await client.SetStatusAsync(UserStatus.Idle);
+                await client.SetActivityAsync(new Game("Sleeping... Zzz", ActivityType.Playing));
+            }
+            else
+            {
+                _logger.LogWarning("Unable to set Discord status: client is not a DiscordSocketClient");
+            }
             
             _logger.LogInformation("Entered sleep mode");
         }
@@ -273,8 +286,16 @@ public class StaminaService : IStaminaService
             _sleepUntil = DateTime.MinValue;
             
             // Reset Discord status
-            await _discordClient.SetStatusAsync(UserStatus.Online);
-            await _discordClient.SetActivityAsync(new Game("Active and Energized", ActivityType.Playing));
+            var client = _discordClient as Discord.WebSocket.DiscordSocketClient;
+            if (client != null)
+            {
+                await client.SetStatusAsync(UserStatus.Online);
+                await client.SetActivityAsync(new Game("Active and Energized", ActivityType.Playing));
+            }
+            else
+            {
+                _logger.LogWarning("Unable to set Discord status: client is not a DiscordSocketClient");
+            }
             
             _logger.LogInformation("Exited sleep mode");
         }

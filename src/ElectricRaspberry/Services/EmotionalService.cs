@@ -143,13 +143,13 @@ public class EmotionalService : IEmotionalService
         // Set basic emotion changes based on simple sentiment
         if (isPositive)
         {
-            trigger.EmotionChanges[CoreEmotions.Joy] = 10;
-            trigger.EmotionChanges[CoreEmotions.Sadness] = -5;
+            trigger.EmotionChanges[CoreEmotions.Joy.ToString()] = 10;
+            trigger.EmotionChanges[CoreEmotions.Sadness.ToString()] = -5;
         }
         else
         {
-            trigger.EmotionChanges[CoreEmotions.Sadness] = 10;
-            trigger.EmotionChanges[CoreEmotions.Joy] = -5;
+            trigger.EmotionChanges[CoreEmotions.Sadness.ToString()] = 10;
+            trigger.EmotionChanges[CoreEmotions.Joy.ToString()] = -5;
         }
         
         return trigger;
@@ -179,7 +179,7 @@ public class EmotionalService : IEmotionalService
         foreach (var (emotion, change) in impact.Changes)
         {
             // High-arousal emotions (joy, anger) are more draining when intense
-            if ((emotion == CoreEmotions.Joy || emotion == CoreEmotions.Anger) && Math.Abs(change) > 15)
+            if ((emotion == CoreEmotions.Joy.ToString() || emotion == CoreEmotions.Anger.ToString()) && Math.Abs(change) > 15)
             {
                 emotionMultiplier = 1.5;
                 break;
@@ -189,40 +189,60 @@ public class EmotionalService : IEmotionalService
         return baseCost * emotionMultiplier;
     }
     
+    public async Task ResetEmotionalStateAsync()
+    {
+        await _stateLock.WaitAsync();
+        try
+        {
+            // Reset all emotions to baseline values
+            foreach (var emotion in CoreEmotionsExtensions.AllEmotions)
+            {
+                var baselineValue = _personalityProfile.GetEmotionalBaseline(emotion);
+                _currentState.SetEmotion(emotion, baselineValue);
+            }
+            
+            _logger.LogInformation("Emotional state reset to baseline");
+        }
+        finally
+        {
+            _stateLock.Release();
+        }
+    }
+    
     // TODO: Move to PersonalityService when implemented
     private class PersonalityProfile
     {
         // Baseline values that emotions tend to return to (0-100)
         private readonly Dictionary<string, double> _baselines = new()
         {
-            [CoreEmotions.Joy] = 60,      // Optimistic baseline
-            [CoreEmotions.Sadness] = 30,   // Low sadness baseline
-            [CoreEmotions.Anger] = 25,     // Low anger baseline
-            [CoreEmotions.Fear] = 30,      // Moderate fear baseline
-            [CoreEmotions.Surprise] = 50,  // Neutral surprise baseline
-            [CoreEmotions.Disgust] = 25    // Low disgust baseline
+            [CoreEmotions.Joy.ToString()] = 60,      // Optimistic baseline
+            [CoreEmotions.Sadness.ToString()] = 30,   // Low sadness baseline
+            [CoreEmotions.Anger.ToString()] = 25,     // Low anger baseline
+            [CoreEmotions.Fear.ToString()] = 30,      // Moderate fear baseline
+            [CoreEmotions.Surprise.ToString()] = 50,  // Neutral surprise baseline
+            [CoreEmotions.Disgust.ToString()] = 25    // Low disgust baseline
         };
         
         // How quickly emotions return to baseline (0-1)
         private readonly Dictionary<string, double> _recoveryRates = new()
         {
-            [CoreEmotions.Joy] = 0.15,      // Slow recovery from joy
-            [CoreEmotions.Sadness] = 0.1,   // Very slow recovery from sadness
-            [CoreEmotions.Anger] = 0.2,     // Medium recovery from anger
-            [CoreEmotions.Fear] = 0.25,     // Faster recovery from fear
-            [CoreEmotions.Surprise] = 0.5,  // Quick recovery from surprise
-            [CoreEmotions.Disgust] = 0.2    // Medium recovery from disgust
+            [CoreEmotions.Joy.ToString()] = 0.15,      // Slow recovery from joy
+            [CoreEmotions.Sadness.ToString()] = 0.1,   // Very slow recovery from sadness
+            [CoreEmotions.Anger.ToString()] = 0.2,     // Medium recovery from anger
+            [CoreEmotions.Fear.ToString()] = 0.25,     // Faster recovery from fear
+            [CoreEmotions.Surprise.ToString()] = 0.5,  // Quick recovery from surprise
+            [CoreEmotions.Disgust.ToString()] = 0.2    // Medium recovery from disgust
         };
         
         // How strongly emotions are affected by triggers (0-2)
         private readonly Dictionary<string, double> _sensitivities = new()
         {
-            [CoreEmotions.Joy] = 1.5,      // Very sensitive to joy
-            [CoreEmotions.Sadness] = 1.2,   // Quite sensitive to sadness
-            [CoreEmotions.Anger] = 0.7,     // Less sensitive to anger
-            [CoreEmotions.Fear] = 1.0,      // Average sensitivity to fear
-            [CoreEmotions.Surprise] = 1.3,  // Quite sensitive to surprise
-            [CoreEmotions.Disgust] = 0.8    // Less sensitive to disgust
+            [CoreEmotions.Joy.ToString()] = 1.5,      // Very sensitive to joy
+            [CoreEmotions.Sadness.ToString()] = 1.2,   // Quite sensitive to sadness
+            [CoreEmotions.Anger.ToString()] = 0.7,     // Less sensitive to anger
+            [CoreEmotions.Fear.ToString()] = 1.0,      // Average sensitivity to fear
+            [CoreEmotions.Surprise.ToString()] = 1.3,  // Quite sensitive to surprise
+            [CoreEmotions.Disgust.ToString()] = 0.8    // Less sensitive to disgust
         };
         
         public double GetEmotionalBaseline(string emotion)

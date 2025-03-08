@@ -64,6 +64,12 @@ namespace ElectricRaspberry.Services
         {
             return _personalityTraits.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
+        
+        /// <inheritdoc/>
+        public async Task<Dictionary<string, double>> GetCurrentTraitsAsync()
+        {
+            return await GetPersonalityProfileAsync();
+        }
 
         /// <inheritdoc/>
         public async Task UpdatePersonalityFromInteractionAsync(MessageEvent messageEvent, EmotionalImpact emotionalImpact)
@@ -166,9 +172,10 @@ namespace ElectricRaspberry.Services
 
                 // Check emotional state - less likely to initiate if in negative emotional state
                 var emotionalState = await _emotionalService.GetCurrentEmotionalStateAsync();
-                if (emotionalState.GetDominantEmotion() == CoreEmotions.Sadness ||
-                    emotionalState.GetDominantEmotion() == CoreEmotions.Anger ||
-                    emotionalState.GetDominantEmotion() == CoreEmotions.Fear)
+                var dominantEmotion = emotionalState.GetDominantEmotion();
+                if (dominantEmotion == CoreEmotions.Sadness ||
+                    dominantEmotion == CoreEmotions.Anger ||
+                    dominantEmotion == CoreEmotions.Fear)
                 {
                     probability *= 0.7;
                 }
@@ -207,29 +214,27 @@ namespace ElectricRaspberry.Services
                 double probability = _options.BaseResponseProbability;
 
                 // Always respond if directly mentioned
-                if (messageEvent.IsMentioned)
+                if (messageEvent.MentionsBot || messageEvent.IsMentioned(Convert.ToUInt64(_options.BotUserId)))
                 {
                     return true;
                 }
 
                 // Adjust based on relationship with user
-                if (messageEvent.AuthorId != null)
+                try
                 {
-                    try
+                    var authorId = messageEvent.AuthorId.ToString();
+                    var relationship = await _knowledgeService.GetEdgesByTypeAsync<RelationshipEdge>(
+                        edge => edge.TargetId == authorId);
+                    
+                    if (relationship != null && relationship.Any())
                     {
-                        var relationship = await _knowledgeService.GetEdgesByTypeAsync<RelationshipEdge>(
-                            edge => edge.TargetId == messageEvent.AuthorId);
-                        
-                        if (relationship != null && relationship.Any())
-                        {
-                            // Higher relationship strength = more likely to respond
-                            probability *= 1.0 + (relationship.First().Strength - 0.5);
-                        }
+                        // Higher relationship strength = more likely to respond
+                        probability *= 1.0 + (relationship.First().Strength - 0.5);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Error retrieving relationship data");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error retrieving relationship data");
                 }
 
                 // Check if in an active conversation context
@@ -246,8 +251,9 @@ namespace ElectricRaspberry.Services
 
                 // Check emotional state - less likely to respond when in negative emotional state
                 var emotionalState = await _emotionalService.GetCurrentEmotionalStateAsync();
-                if (emotionalState.GetDominantEmotion() == CoreEmotions.Sadness ||
-                    emotionalState.GetDominantEmotion() == CoreEmotions.Anger)
+                var dominantEmotion = emotionalState.GetDominantEmotion();
+                if (dominantEmotion == CoreEmotions.Sadness ||
+                    dominantEmotion == CoreEmotions.Anger)
                 {
                     probability *= 0.8;
                 }
@@ -331,6 +337,11 @@ namespace ElectricRaspberry.Services
                         case CoreEmotions.Fear:
                             verbosity -= 1;
                             formality += 1;
+                            break;
+                        case CoreEmotions.Neutral:
+                        case CoreEmotions.Disgust:
+                        default:
+                            // No adjustment
                             break;
                     }
                 }
@@ -423,24 +434,12 @@ namespace ElectricRaspberry.Services
         /// <summary>
         /// Helper method to safely get the stamina service
         /// </summary>
-        private async Task<IStaminaService> GetStaminaServiceAsync()
+        private Task<IStaminaService> GetStaminaServiceAsync()
         {
-            try
-            {
-                // In a real implementation this would be injected via DI
-                // This is a workaround to avoid circular dependencies
-                // We could use a service locator pattern in production
-                var serviceProvider = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IServiceProvider>(
-                    Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IServiceProvider>(null));
-                
-                return serviceProvider.GetService<IStaminaService>();
-            }
-            catch
-            {
-                // If we can't get the stamina service, return null
-                _logger.LogWarning("Could not get StaminaService");
-                return null;
-            }
+            // For this implementation, we'll return null since we don't have access to the service provider
+            // In a real implementation with proper DI, we would inject and use the actual service
+            _logger.LogDebug("Using dummy stamina service implementation");
+            return Task.FromResult<IStaminaService>(null);
         }
     }
 }

@@ -1,6 +1,7 @@
 using Discord;
 using Discord.WebSocket;
 using ElectricRaspberry.Models.Conversation;
+using ElectricRaspberry.Models.Emotions;
 using ElectricRaspberry.Models.Regulation;
 using Microsoft.Extensions.Hosting;
 
@@ -68,10 +69,9 @@ public class IdleBehaviorService : BackgroundService
                     continue;
                 }
                 
-                // Get active channels
+                // Get all text channels (we can't check LastMessageId as it's not available in the current API version)
                 var channels = _discordClient.Guilds
                     .SelectMany(g => g.TextChannels)
-                    .Where(c => c.LastMessageId != 0)
                     .ToList();
                 
                 if (!channels.Any())
@@ -262,16 +262,16 @@ public class IdleBehaviorService : BackgroundService
         // Adjust based on emotional state if available
         if (emotionalState != null)
         {
-            if (emotionalState.GetEmotion(CoreEmotions.Joy) > 0.7)
+            if (emotionalState.GetEmotion(CoreEmotions.Joy.ToString()) > 0.7)
             {
                 activityDescription = "Feeling cheerful!";
             }
-            else if (emotionalState.GetEmotion(CoreEmotions.Sadness) > 0.7)
+            else if (emotionalState.GetEmotion(CoreEmotions.Sadness.ToString()) > 0.7)
             {
                 activityDescription = "Feeling a bit down";
                 status = UserStatus.Idle;
             }
-            else if (emotionalState.GetEmotion(CoreEmotions.Anger) > 0.6)
+            else if (emotionalState.GetEmotion(CoreEmotions.Anger.ToString()) > 0.6)
             {
                 activityDescription = "Taking a moment to cool off";
                 status = UserStatus.DoNotDisturb;

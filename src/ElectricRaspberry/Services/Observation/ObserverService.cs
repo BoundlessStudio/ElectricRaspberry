@@ -69,9 +69,9 @@ public class ObserverService : IObserverService
         var isSleeping = await _staminaService.IsSleepingAsync();
         
         // If the bot is sleeping, add the message to the catchup queue unless it's a direct mention or DM
-        if (isSleeping && !(messageEvent.IsMention && messageEvent.MentionedUserIds.Contains(_botUserId)) && !messageEvent.IsDirectMessage)
+        if (isSleeping && !(messageEvent.MentionsBot || messageEvent.IsMentioned(Convert.ToUInt64(_botUserId))) && !messageEvent.IsDirectMessage)
         {
-            await _catchupService.AddToCatchupQueueAsync(new CatchupQueueItem(channelId, messageEvent));
+            await _catchupService.AddToCatchupQueueAsync(new CatchupQueueItem(messageEvent, channelId));
             _logger.LogDebug("Added message from {UserId} in channel {ChannelId} to catchup queue while sleeping", 
                 messageEvent.AuthorId, channelId);
             return;
