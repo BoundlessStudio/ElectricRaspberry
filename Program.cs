@@ -59,6 +59,10 @@ builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.
 // Add Admin System configuration
 builder.Services.Configure<ElectricRaspberry.Services.Admin.Configuration.AdminOptions>(
     builder.Configuration.GetSection(ElectricRaspberry.Services.Admin.Configuration.AdminOptions.Admin));
+    
+// Add Self-Regulation System configuration
+builder.Services.Configure<ElectricRaspberry.Services.Regulation.Configuration.SelfRegulationOptions>(
+    builder.Configuration.GetSection(ElectricRaspberry.Services.Regulation.Configuration.SelfRegulationOptions.SelfRegulation));
 
 // Add Application Insights - Serilog is already configured to use Application Insights
 var appInsightsConnectionString = builder.Configuration.GetSection("ApplicationInsights:ConnectionString").Value;
@@ -105,6 +109,10 @@ builder.Services.AddHostedService<ElectricRaspberry.Services.Observation.Observe
 
 // Add Admin System services
 builder.Services.AddSingleton<ElectricRaspberry.Services.Admin.IAdminService, ElectricRaspberry.Services.Admin.AdminService>();
+
+// Add Self-Regulation System services
+builder.Services.AddSingleton<ElectricRaspberry.Services.Regulation.ISelfRegulationService, ElectricRaspberry.Services.Regulation.SelfRegulationService>();
+builder.Services.AddHostedService<ElectricRaspberry.Services.Regulation.IdleBehaviorService>();
 
 // Add Discord Interaction services
 builder.Services.AddSingleton<Discord.Interactions.InteractionService>();

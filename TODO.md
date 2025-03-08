@@ -54,16 +54,16 @@ Based on the README architecture and the current scaffolded project, the followi
 - [x] Integrate with stamina system
 
 ### Self-Regulation
-- [ ] Implement dynamic message throttling
-- [ ] Create natural idle behaviors
-- [ ] Add relationship-driven interaction decisions
-- [ ] Implement engagement probability calculation
+- [x] Implement dynamic message throttling
+- [x] Create natural idle behaviors
+- [x] Add relationship-driven interaction decisions
+- [x] Implement engagement probability calculation
 
 ### Relationship Tracking
 - [x] Add user relationship data models
 - [x] Implement relationship strength calculation
 - [x] Create interest alignment mechanisms
-- [ ] Add relationship stage progression
+- [x] Add relationship stage progression
 
 ## Phase 3: Advanced Features
 
