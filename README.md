@@ -12,12 +12,13 @@ ElectricRaspberry creates a lifelike Discord presence that:
 
 ## Core Concept
 
-Unlike traditional reactive bots that respond only to direct commands, ElectricRaspberry uses an **AI observer pattern** to:
-1. Continuously monitor multiple Discord channels simultaneously
-2. Process information from text channels, DMs, voice channels, etc. in parallel
-3. Build context from ongoing conversations and server activities
-4. Generate responses based on its persona and emotional state
-5. Maintain knowledge and memories across interactions
+Unlike traditional reactive bots that respond only to direct commands, ElectricRaspberry uses an **AI observer pattern** with a unique integrated architecture:
+
+1. **Integrated Service Layer**: Core services (Persona, Personality, Conversations, etc.) manage their internal state while exposing functions as AI tools
+2. **Dual Management Approach**: Testing both system-managed and AI self-regulated states to determine optimal architecture
+3. **Context-Driven Decision Making**: AI accesses internal bot state through Context Builder to make informed responses
+4. **Parallel Channel Processing**: Monitor and process multiple Discord channels simultaneously
+5. **Cross-Channel Awareness**: Build unified context from text channels, DMs, voice channels, and other sources
 
 ## Features
 
@@ -62,27 +63,44 @@ The API will be available at:
 
 ### Core Components
 
-1. **Persona Engine**: Manages the bot's personality, emotional state, and decision-making
-2. **Knowledge Graph**: Stores and retrieves information about users, channels, and conversations
-3. **Observer Manager**: Processes multiple Discord events in parallel
-4. **Context Builder**: Constructs conversation context from various inputs
-5. **Response Generator**: Creates natural language responses based on persona and context
-6. **DiscordBotService**: Background service that connects to Discord and publishes events
-7. **MediatR Pipeline**: Event-driven architecture for processing Discord events
+1. **Service Layer**: Modular services that manage internal state while exposing functions as AI tools
+   - **Persona Service**: Maintains identity and profile information
+   - **Personality Service**: Manages personality traits and behavior patterns
+   - **Emotional Service**: Tracks emotional state and responses
+   - **Conversation Service**: Handles ongoing conversations and context
+   - **Knowledge Service**: Manages the knowledge graph and memory
+2. **Tool Registry**: Exposes service functions as callable tools for the AI
+3. **Context Builder**: Constructs rich context from services for AI decisions
+4. **Observer Manager**: Processes multiple Discord events in parallel
+5. **DiscordBotService**: Background service that connects to Discord and publishes events
+6. **MediatR Pipeline**: Event-driven architecture for processing Discord events
 
 ### System Design
 
-ElectricRaspberry uses an AI observer pattern implemented through MediatR:
+ElectricRaspberry uses an integrated service architecture with AI tools:
 
 ```mermaid
 flowchart LR
     DiscordEvents[Discord Events] --> MediatR[MediatR Pipeline]
     MediatR --> ParallelHandlers[Multiple Parallel Handlers]
-    ParallelHandlers --> SharedContext[Shared Context & Knowledge]
-    SharedContext --> ContextAnalysis[Context Analysis]
-    ContextAnalysis --> EmotionalState[Emotional State]
-    EmotionalState --> PersonaEngine[Persona Engine]
-    PersonaEngine --> ResponseGen[Response Generation]
+    
+    subgraph Services
+        PersonaService[Persona Service]
+        PersonalityService[Personality Service]
+        EmotionalService[Emotional Service]
+        ConversationService[Conversation Service]
+        KnowledgeService[Knowledge Service]
+    end
+    
+    ParallelHandlers --> Services
+    Services --> ToolRegistry[Tool Registry]
+    Services --> ContextBuilder[Context Builder]
+    
+    ToolRegistry --> AI[AI Engine]
+    ContextBuilder --> AI
+    
+    AI --> ResponseGen[Response Generation]
+    AI --> Services
 ```
 
 ### Observer Implementation
@@ -94,16 +112,21 @@ The system observes multiple channels simultaneously through parallel MediatR ha
 - **Voice Channel Observers**: Track voice activity and participation
 - **Server Activity Observers**: Monitor member joins/leaves, reactions, etc.
 
-### Persona Components
+### Service Integration and AI Self-Regulation
 
-The bot's persona is made up of multiple facets:
+ElectricRaspberry uses a hybrid approach to state management:
 
-- **Personality Engine**: Core decision-making and behavior generator based on defined traits
-- **Profile**: Basic information and personality attributes
-- **Emotional State**: Current emotions, mood, and emotional responses
-- **Knowledge**: Information about users and relationships
-- **Memory**: Long and short-term conversation history
-- **Preferences**: Likes, dislikes, and behavioral tendencies
+#### Service Responsibilities
+- Each service maintains its own internal state and data structures
+- Services expose methods as tools the AI can call to query or modify state
+- Services contribute to context building by providing state snapshots
+- Services implement persistence and data integrity safeguards
+
+#### AI Self-Regulation
+- AI can access current state through rich context provided by the Context Builder
+- AI can modify state by calling service tools through the Tool Registry
+- Both approaches (system-managed state updates and AI self-regulation) will be tested to determine the optimal balance
+- AI can analyze its own performance and suggest improvements to its decision-making process
 
 ## Planned Expansions
 
