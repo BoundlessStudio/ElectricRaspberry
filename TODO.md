@@ -74,15 +74,9 @@ Based on the README architecture and the current scaffolded project, the followi
 - [x] Implement transaction batching for related operations
 
 ### Voice Channel Features
-- [ ] Add voice channel participation logic
-- [ ] Implement voice activity detection
-- [ ] Create voice stamina consumption
-
-### Miscellaneous
-- [ ] Add multimedia content handling
-- [ ] Create thread and forum participation
-- [ ] Implement server management capabilities
-- [ ] Add external API endpoints for future integration
+- [x] Add voice channel participation logic
+- [x] Implement voice activity detection
+- [x] Create voice stamina consumption
 
 ## Configuration Updates
 - [x] Update `appsettings.json` to include all required configurations

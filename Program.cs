@@ -94,6 +94,7 @@ builder.Services.AddSingleton<IEmotionalService, EmotionalService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
 builder.Services.AddSingleton<ICatchupService, CatchupService>();
 builder.Services.AddSingleton<IKnowledgeService, KnowledgeService>();
+builder.Services.AddSingleton<IVoiceService, VoiceService>();
 builder.Services.AddSingleton<IPersonaService, PersonaService>();
 builder.Services.AddSingleton<IPersonalityService, PersonalityService>();
 builder.Services.AddSingleton<IContextBuilder, ContextBuilder>();
@@ -119,7 +120,7 @@ builder.Services.AddSingleton<Discord.Interactions.InteractionService>();
 builder.Services.AddHostedService<InteractionHandlerService>();
 
 // Add Discord client and service
-builder.Services.AddSingleton<Discord.IDiscordClient>(provider =>
+builder.Services.AddSingleton<Discord.WebSocket.DiscordSocketClient>(provider =>
 {
     var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<DiscordOptions>>().Value;
     var client = new Discord.WebSocket.DiscordSocketClient(new Discord.WebSocket.DiscordSocketConfig
@@ -132,6 +133,8 @@ builder.Services.AddSingleton<Discord.IDiscordClient>(provider =>
     
     return client;
 });
+builder.Services.AddSingleton<Discord.IDiscordClient>(provider => 
+    provider.GetRequiredService<Discord.WebSocket.DiscordSocketClient>());
 builder.Services.AddHostedService<DiscordBotService>();
 
 var app = builder.Build();

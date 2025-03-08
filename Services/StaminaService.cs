@@ -198,6 +198,26 @@ public class StaminaService : IStaminaService
         }
     }
     
+    public async Task ResetStaminaAsync()
+    {
+        await _staminaLock.WaitAsync();
+        try
+        {
+            _currentStamina = _staminaSettings.MaxStamina;
+            _logger.LogInformation("Stamina reset to maximum value: {MaxStamina}", _staminaSettings.MaxStamina);
+            
+            // If sleeping, wake up since we have full stamina
+            if (_isSleeping)
+            {
+                await ExitSleepModeAsync();
+            }
+        }
+        finally
+        {
+            _staminaLock.Release();
+        }
+    }
+    
     private async Task UpdateStaminaFromLastCheckAsync()
     {
         // Calculate time since last update
