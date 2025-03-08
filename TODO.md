@@ -1,0 +1,92 @@
+# ElectricRaspberry Implementation TODO List
+
+Based on the README architecture and the current scaffolded project, the following components need to be implemented:
+
+## Phase 1: Core Infrastructure
+
+### Service Layer
+- [ ] Create `IPersonaService` and implementation
+- [ ] Create `IPersonalityService` and implementation
+- [x] Create `IEmotionalService` and implementation with Chris Crawford's model
+- [ ] Create `IConversationService` and implementation
+- [ ] Create `IKnowledgeService` and implementation with Cosmos DB + Gremlin integration
+- [x] Create `IStaminaService` and implementation with stamina mechanics
+- [ ] Create `ICatchupService` for sleep mode message processing
+
+### Azure Integrations
+- [ ] Add Azure Cosmos DB with Gremlin API configuration and client
+- [ ] Implement knowledge graph schema and CRUD operations
+- [x] Add Azure Application Insights integration for logging
+- [ ] Configure structured logging strategy
+
+### Continuous Thinking Loop
+- [ ] Create `IContextBuilder` and implementation
+- [ ] Create `IToolRegistry` and implementation
+- [ ] Design and implement AI Engine interfaces and components
+- [ ] Create `IDecisionMaker` and implementation
+- [ ] Create `IActionPlanner` and implementation
+
+### Observation System
+- [ ] Implement channel buffer management for concurrent observation
+- [ ] Add synchronization mechanisms for context updates
+- [ ] Create event prioritization system
+- [ ] Implement throttling and rate limiting
+- [ ] Add concurrency management for shared state
+
+### Admin Controls
+- [ ] Add Discord slash commands for admin controls
+- [ ] Implement operation cancellation mechanism
+- [ ] Create emergency stop functionality
+- [ ] Add command validation and security
+
+## Phase 2: User Experience
+
+### Stamina System
+- [x] Implement stamina consumption for different activities
+- [x] Create sleep mode triggers and transitions
+- [x] Add stamina recovery mechanisms
+- [x] Implement wake-up process logic
+
+### Emotional System
+- [x] Create emotional state tracking components
+- [x] Implement emotional triggers and responses
+- [x] Add expression mapping for communication
+- [x] Integrate with stamina system
+
+### Self-Regulation
+- [ ] Implement dynamic message throttling
+- [ ] Create natural idle behaviors
+- [ ] Add relationship-driven interaction decisions
+- [ ] Implement engagement probability calculation
+
+### Relationship Tracking
+- [ ] Add user relationship data models
+- [ ] Implement relationship strength calculation
+- [ ] Create interest alignment mechanisms
+- [ ] Add relationship stage progression
+
+## Phase 3: Advanced Features
+
+### Knowledge Graph
+- [ ] Implement graph maintenance during sleep
+- [ ] Add memory consolidation algorithms
+- [ ] Create optimistic concurrency control for graph updates
+- [ ] Implement transaction batching for related operations
+
+### Voice Channel Features
+- [ ] Add voice channel participation logic
+- [ ] Implement voice activity detection
+- [ ] Create voice stamina consumption
+
+### Miscellaneous
+- [ ] Add multimedia content handling
+- [ ] Create thread and forum participation
+- [ ] Implement server management capabilities
+- [ ] Add external API endpoints for future integration
+
+## Configuration Updates
+- [x] Update `appsettings.json` to include all required configurations
+- [x] Add Azure Cosmos DB connection settings
+- [x] Configure Application Insights
+- [x] Add stamina system settings
+- [x] Configure emotional system parameters
