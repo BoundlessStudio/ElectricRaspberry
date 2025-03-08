@@ -44,6 +44,18 @@ builder.Services.Configure<ToolRegistryOptions>(
 builder.Services.Configure<AIEngineOptions>(
     builder.Configuration.GetSection(AIEngineOptions.ConfigSection));
 
+// Add Observation System configuration
+builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.ObserverOptions>(
+    builder.Configuration.GetSection("Observer"));
+builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.ObserverBackgroundOptions>(
+    builder.Configuration.GetSection("Observer:Background"));
+builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.EventPrioritizationOptions>(
+    builder.Configuration.GetSection("Observer:EventPrioritization"));
+builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.RateLimitingOptions>(
+    builder.Configuration.GetSection("Observer:RateLimiting"));
+builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.ConcurrencyOptions>(
+    builder.Configuration.GetSection("Observer:Concurrency"));
+
 // Add Application Insights - Serilog is already configured to use Application Insights
 var appInsightsConnectionString = builder.Configuration.GetSection("ApplicationInsights:ConnectionString").Value;
 if (!string.IsNullOrEmpty(appInsightsConnectionString))
@@ -78,7 +90,14 @@ builder.Services.AddSingleton<IPersonaService, PersonaService>();
 builder.Services.AddSingleton<IPersonalityService, PersonalityService>();
 builder.Services.AddSingleton<IContextBuilder, ContextBuilder>();
 builder.Services.AddSingleton<IToolRegistry, ToolRegistry>();
-// Add remaining services as they are implemented
+
+// Add Observation System services
+builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IChannelBufferManager, ElectricRaspberry.Services.Observation.ChannelBufferManager>();
+builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IEventPrioritizationService, ElectricRaspberry.Services.Observation.EventPrioritizationService>();
+builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IRateLimitingService, ElectricRaspberry.Services.Observation.RateLimitingService>();
+builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IConcurrencyManager, ElectricRaspberry.Services.Observation.ConcurrencyManager>();
+builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IObserverService, ElectricRaspberry.Services.Observation.ObserverService>();
+builder.Services.AddHostedService<ElectricRaspberry.Services.Observation.ObserverBackgroundService>();
 
 // Add Discord client and service
 builder.Services.AddSingleton<Discord.IDiscordClient>(provider =>
