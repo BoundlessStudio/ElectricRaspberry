@@ -3,8 +3,23 @@ using ElectricRaspberry.Configuration;
 using ElectricRaspberry.Models.Emotions;
 using System.Reflection;
 using Microsoft.ApplicationInsights.Extensibility;
+using Serilog;
+using Serilog.Events;
 
+// Set up structured logging with Serilog
+var logger = LoggingSetup.ConfigureStructuredLogger(
+    new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json")
+        .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+        .AddEnvironmentVariables()
+        .Build(),
+    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production");
+
+Log.Logger = logger;
+
+// Create the web application builder with Serilog
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -18,8 +33,12 @@ builder.Services.Configure<CosmosDbOptions>(
     builder.Configuration.GetSection(CosmosDbOptions.CosmosDB));
 builder.Services.Configure<StaminaSettings>(
     builder.Configuration.GetSection(StaminaSettings.Stamina));
+builder.Services.Configure<PersonaOptions>(
+    builder.Configuration.GetSection(PersonaOptions.ConfigSection));
+builder.Services.Configure<PersonalityOptions>(
+    builder.Configuration.GetSection(PersonalityOptions.ConfigSection));
 
-// Add Application Insights
+// Add Application Insights - Serilog is already configured to use Application Insights
 var appInsightsConnectionString = builder.Configuration.GetSection("ApplicationInsights:ConnectionString").Value;
 if (!string.IsNullOrEmpty(appInsightsConnectionString))
 {
@@ -28,9 +47,14 @@ if (!string.IsNullOrEmpty(appInsightsConnectionString))
         options.ConnectionString = appInsightsConnectionString;
     });
     
+    // Use our custom telemetry initializer from LoggingOptions.cs
     builder.Services.Configure<TelemetryConfiguration>(config =>
     {
-        config.TelemetryInitializers.Add(new CustomTelemetryInitializer());
+        var botName = builder.Configuration.GetSection("Persona:Name").Value ?? "ElectricRaspberry";
+        var environment = builder.Environment.EnvironmentName;
+        
+        config.TelemetryInitializers.Add(
+            new ElectricRaspberryTelemetryInitializer("1.0.0", botName, environment));
     });
 }
 
@@ -44,6 +68,8 @@ builder.Services.AddSingleton<IEmotionalService, EmotionalService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
 builder.Services.AddSingleton<ICatchupService, CatchupService>();
 builder.Services.AddSingleton<IKnowledgeService, KnowledgeService>();
+builder.Services.AddSingleton<IPersonaService, PersonaService>();
+builder.Services.AddSingleton<IPersonalityService, PersonalityService>();
 // Add remaining services as they are implemented
 
 // Add Discord client and service
@@ -75,22 +101,19 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
-
-/// <summary>
-/// Custom telemetry initializer to add bot properties to all telemetry
-/// </summary>
-public class CustomTelemetryInitializer : ITelemetryInitializer
+try
 {
-    public void Initialize(Microsoft.ApplicationInsights.Channel.ITelemetry telemetry)
-    {
-        telemetry.Context.Component.Version = "1.0.0";
-        telemetry.Context.Cloud.RoleName = "ElectricRaspberry";
-        
-        // Add bot-specific properties
-        if (telemetry is Microsoft.ApplicationInsights.DataContracts.TraceTelemetry trace)
-        {
-            trace.Properties["BotComponent"] = "Core";
-        }
-    }
+    app.Run();
+    
+    // Close and flush the logger when the application exits
+    Log.Information("Application shutting down gracefully");
+    Log.CloseAndFlush();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
 }
