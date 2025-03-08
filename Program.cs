@@ -37,6 +37,12 @@ builder.Services.Configure<PersonaOptions>(
     builder.Configuration.GetSection(PersonaOptions.ConfigSection));
 builder.Services.Configure<PersonalityOptions>(
     builder.Configuration.GetSection(PersonalityOptions.ConfigSection));
+builder.Services.Configure<ContextOptions>(
+    builder.Configuration.GetSection(ContextOptions.ConfigSection));
+builder.Services.Configure<ToolRegistryOptions>(
+    builder.Configuration.GetSection(ToolRegistryOptions.ConfigSection));
+builder.Services.Configure<AIEngineOptions>(
+    builder.Configuration.GetSection(AIEngineOptions.ConfigSection));
 
 // Add Application Insights - Serilog is already configured to use Application Insights
 var appInsightsConnectionString = builder.Configuration.GetSection("ApplicationInsights:ConnectionString").Value;
@@ -70,6 +76,8 @@ builder.Services.AddSingleton<ICatchupService, CatchupService>();
 builder.Services.AddSingleton<IKnowledgeService, KnowledgeService>();
 builder.Services.AddSingleton<IPersonaService, PersonaService>();
 builder.Services.AddSingleton<IPersonalityService, PersonalityService>();
+builder.Services.AddSingleton<IContextBuilder, ContextBuilder>();
+builder.Services.AddSingleton<IToolRegistry, ToolRegistry>();
 // Add remaining services as they are implemented
 
 // Add Discord client and service
