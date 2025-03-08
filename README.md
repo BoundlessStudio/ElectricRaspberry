@@ -74,10 +74,15 @@ The API will be available at:
 
 ElectricRaspberry uses an AI observer pattern implemented through MediatR:
 
-```
-Discord Events → MediatR Pipeline → Multiple Parallel Handlers → Shared Context & Knowledge
-                                                              ↓
-Response Generation ← Persona Engine ← Emotional State ← Context Analysis
+```mermaid
+flowchart LR
+    DiscordEvents[Discord Events] --> MediatR[MediatR Pipeline]
+    MediatR --> ParallelHandlers[Multiple Parallel Handlers]
+    ParallelHandlers --> SharedContext[Shared Context & Knowledge]
+    SharedContext --> ContextAnalysis[Context Analysis]
+    ContextAnalysis --> EmotionalState[Emotional State]
+    EmotionalState --> PersonaEngine[Persona Engine]
+    PersonaEngine --> ResponseGen[Response Generation]
 ```
 
 ### Observer Implementation
@@ -93,8 +98,9 @@ The system observes multiple channels simultaneously through parallel MediatR ha
 
 The bot's persona is made up of multiple facets:
 
-- **Profile**: Basic information and personality traits
-- **Emotional State**: Current emotions and mood
+- **Personality Engine**: Core decision-making and behavior generator based on defined traits
+- **Profile**: Basic information and personality attributes
+- **Emotional State**: Current emotions, mood, and emotional responses
 - **Knowledge**: Information about users and relationships
 - **Memory**: Long and short-term conversation history
 - **Preferences**: Likes, dislikes, and behavioral tendencies
@@ -109,12 +115,12 @@ Future versions will include:
 - Advanced knowledge graph with relationship mapping
 - Multimedia content creation and sharing
 
-## API Endpoints
+## Future API Plans
 
-- `GET /api/discord/status`: Returns the bot's status
-- `GET /api/persona`: Returns the current persona state
-- `GET /api/knowledge`: Access the knowledge graph (planned)
-- `POST /api/persona/configure`: Update persona settings (planned)
+In future versions, API endpoints will be implemented to support:
+- Discord Activity and Linked Roles integration
+- External persona management and monitoring
+- Analytics and conversation insights
 
 ## License
 
