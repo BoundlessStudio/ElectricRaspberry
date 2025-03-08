@@ -55,4 +55,10 @@ public interface IStaminaService
     /// </summary>
     /// <returns>True if stamina is high enough to wake, false otherwise</returns>
     Task<bool> ShouldWakeAsync();
+    
+    /// <summary>
+    /// Resets the stamina to maximum value
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    Task ResetStaminaAsync();
 }

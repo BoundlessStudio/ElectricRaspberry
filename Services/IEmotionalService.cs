@@ -54,4 +54,10 @@ public interface IEmotionalService
     /// <param name="impact">The emotional impact</param>
     /// <returns>The stamina cost</returns>
     double CalculateEmotionalStaminaCost(EmotionalImpact impact);
+    
+    /// <summary>
+    /// Resets the emotional state to baseline
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    Task ResetEmotionalStateAsync();
 }

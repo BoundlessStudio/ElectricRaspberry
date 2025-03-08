@@ -19,18 +19,25 @@ public interface IKnowledgeService
     Task<PersonVertex> GetPersonAsync(ulong discordUserId);
     
     /// <summary>
-    /// Adds or updates a person in the knowledge graph
-    /// </summary>
-    /// <param name="person">The person to add or update</param>
-    /// <returns>The added or updated person</returns>
-    Task<PersonVertex> UpsertPersonAsync(PersonVertex person);
-    
-    /// <summary>
     /// Gets a user relationship
     /// </summary>
     /// <param name="userId">The Discord user ID</param>
     /// <returns>The relationship strength and other details</returns>
     Task<UserRelationship> GetUserRelationshipAsync(ulong userId);
+    
+    /// <summary>
+    /// Gets a user relationship
+    /// </summary>
+    /// <param name="userId">The Discord user ID as a string</param>
+    /// <returns>The relationship strength and other details</returns>
+    Task<UserRelationship> GetUserRelationshipAsync(string userId);
+    
+    /// <summary>
+    /// Adds or updates a person in the knowledge graph
+    /// </summary>
+    /// <param name="person">The person to add or update</param>
+    /// <returns>The added or updated person</returns>
+    Task<PersonVertex> UpsertPersonAsync(PersonVertex person);
     
     /// <summary>
     /// Updates a user relationship
@@ -131,4 +138,10 @@ public interface IKnowledgeService
     /// </summary>
     /// <returns>Task representing the operation</returns>
     Task PerformGraphMaintenanceAsync();
+    
+    /// <summary>
+    /// Resets the knowledge graph, removing all data
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    Task ResetKnowledgeGraphAsync();
 }

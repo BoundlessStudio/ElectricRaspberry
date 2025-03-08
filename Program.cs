@@ -56,6 +56,10 @@ builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.
 builder.Services.Configure<ElectricRaspberry.Services.Observation.Configuration.ConcurrencyOptions>(
     builder.Configuration.GetSection("Observer:Concurrency"));
 
+// Add Admin System configuration
+builder.Services.Configure<ElectricRaspberry.Services.Admin.Configuration.AdminOptions>(
+    builder.Configuration.GetSection(ElectricRaspberry.Services.Admin.Configuration.AdminOptions.Admin));
+
 // Add Application Insights - Serilog is already configured to use Application Insights
 var appInsightsConnectionString = builder.Configuration.GetSection("ApplicationInsights:ConnectionString").Value;
 if (!string.IsNullOrEmpty(appInsightsConnectionString))
@@ -98,6 +102,13 @@ builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IRateLimiti
 builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IConcurrencyManager, ElectricRaspberry.Services.Observation.ConcurrencyManager>();
 builder.Services.AddSingleton<ElectricRaspberry.Services.Observation.IObserverService, ElectricRaspberry.Services.Observation.ObserverService>();
 builder.Services.AddHostedService<ElectricRaspberry.Services.Observation.ObserverBackgroundService>();
+
+// Add Admin System services
+builder.Services.AddSingleton<ElectricRaspberry.Services.Admin.IAdminService, ElectricRaspberry.Services.Admin.AdminService>();
+
+// Add Discord Interaction services
+builder.Services.AddSingleton<Discord.Interactions.InteractionService>();
+builder.Services.AddHostedService<InteractionHandlerService>();
 
 // Add Discord client and service
 builder.Services.AddSingleton<Discord.IDiscordClient>(provider =>

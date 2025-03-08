@@ -34,10 +34,10 @@ Based on the README architecture and the current scaffolded project, the followi
 - [x] Add concurrency management for shared state
 
 ### Admin Controls
-- [ ] Add Discord slash commands for admin controls
-- [ ] Implement operation cancellation mechanism
-- [ ] Create emergency stop functionality
-- [ ] Add command validation and security
+- [x] Add Discord slash commands for admin controls
+- [x] Implement operation cancellation mechanism
+- [x] Create emergency stop functionality
+- [x] Add command validation and security
 
 ## Phase 2: User Experience
 

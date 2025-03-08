@@ -11,8 +11,10 @@ public interface IConversationService
     /// Processes a message event and adds it to the appropriate conversation
     /// </summary>
     /// <param name="messageEvent">The message event to process</param>
+    /// <param name="channelId">The channel ID where the message was sent</param>
+    /// <param name="highPriority">Whether this message should be processed with high priority</param>
     /// <returns>The conversation containing the message</returns>
-    Task<Conversation> ProcessMessageAsync(MessageEvent messageEvent);
+    Task<Conversation> ProcessMessageAsync(MessageEvent messageEvent, string channelId = null, bool highPriority = false);
     
     /// <summary>
     /// Gets a specific conversation by ID
@@ -77,4 +79,10 @@ public interface IConversationService
     /// </summary>
     /// <returns>Task representing the operation</returns>
     Task PerformMaintenanceAsync();
+    
+    /// <summary>
+    /// Resets all active conversations, marking them as completed
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation</returns>
+    Task ResetAllConversationsAsync();
 }
