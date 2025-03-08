@@ -16,7 +16,7 @@ public interface IKnowledgeService
     /// </summary>
     /// <param name="discordUserId">The Discord user ID</param>
     /// <returns>The person if found, null otherwise</returns>
-    Task<PersonVertex> GetPersonAsync(ulong discordUserId);
+    Task<PersonVertex?> GetPersonAsync(ulong discordUserId);
     
     /// <summary>
     /// Gets a user relationship
@@ -55,7 +55,7 @@ public interface IKnowledgeService
     /// </summary>
     /// <param name="name">The topic name</param>
     /// <returns>The topic if found, null otherwise</returns>
-    Task<TopicVertex> GetTopicAsync(string name);
+    Task<TopicVertex?> GetTopicAsync(string name);
     
     /// <summary>
     /// Gets topics by keywords
@@ -83,7 +83,7 @@ public interface IKnowledgeService
     /// <param name="source">The memory source</param>
     /// <param name="occurredAt">When the memory occurred</param>
     /// <returns>The created memory</returns>
-    Task<MemoryVertex> CreateMemoryAsync(string title, string content, string type, string source, DateTime occurredAt);
+    Task<MemoryVertex?> CreateMemoryAsync(string title, string content, string type, string source, DateTime occurredAt);
     
     /// <summary>
     /// Searches for memories
@@ -109,21 +109,21 @@ public interface IKnowledgeService
     /// <param name="targetUserId">The target user ID</param>
     /// <param name="type">The relationship type</param>
     /// <returns>The updated relationship</returns>
-    Task<RelationshipEdge> RecordInteractionAsync(ulong sourceUserId, ulong targetUserId, string type);
+    Task<RelationshipEdge?> RecordInteractionAsync(ulong sourceUserId, ulong targetUserId, string type);
     
     /// <summary>
     /// Records an interaction with the bot
     /// </summary>
     /// <param name="userId">The user ID</param>
     /// <returns>The updated relationship</returns>
-    Task<RelationshipEdge> RecordInteractionAsync(ulong userId);
+    Task<RelationshipEdge?> RecordInteractionAsync(ulong userId);
     
     /// <summary>
     /// Records an interaction with the bot
     /// </summary>
     /// <param name="userId">The user ID as a string</param>
     /// <returns>The updated relationship</returns>
-    Task<RelationshipEdge> RecordInteractionAsync(string userId);
+    Task<RelationshipEdge?> RecordInteractionAsync(string userId);
     
     /// <summary>
     /// Gets edges by type
@@ -146,7 +146,7 @@ public interface IKnowledgeService
     /// <typeparam name="T">The vertex type</typeparam>
     /// <param name="id">The vertex ID</param>
     /// <returns>The vertex if found, null otherwise</returns>
-    Task<T> GetVertexByIdAsync<T>(string id) where T : GraphVertex;
+    Task<T?> GetVertexByIdAsync<T>(string id) where T : GraphVertex;
     
     /// <summary>
     /// Records interest in a topic with a specific level
@@ -154,7 +154,7 @@ public interface IKnowledgeService
     /// <param name="topicName">The topic name</param>
     /// <param name="level">The interest level</param>
     /// <returns>The updated interest</returns>
-    Task<InterestEdge> RecordInterestAsync(string topicName, double level);
+    Task<InterestEdge?> RecordInterestAsync(string topicName, double level);
     
     /// <summary>
     /// Records an interest for a person
@@ -163,7 +163,7 @@ public interface IKnowledgeService
     /// <param name="topicName">The topic name</param>
     /// <param name="source">The interest source</param>
     /// <returns>The updated interest</returns>
-    Task<InterestEdge> RecordInterestAsync(ulong userId, string topicName, string source);
+    Task<InterestEdge?> RecordInterestAsync(ulong userId, string topicName, string source);
     
     /// <summary>
     /// Connects a memory to a topic
@@ -174,7 +174,7 @@ public interface IKnowledgeService
     /// <param name="relevance">The relevance (0-1)</param>
     /// <param name="confidence">The confidence (0-1)</param>
     /// <returns>The created knowledge edge</returns>
-    Task<KnowledgeEdge> ConnectMemoryToTopicAsync(string memoryId, string topicName, string source, double relevance = 0.5, double confidence = 0.5);
+    Task<KnowledgeEdge?> ConnectMemoryToTopicAsync(string memoryId, string topicName, string source, double relevance = 0.5, double confidence = 0.5);
     
     // Maintenance operations
     

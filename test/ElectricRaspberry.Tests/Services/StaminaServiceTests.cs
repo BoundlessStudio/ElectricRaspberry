@@ -56,7 +56,7 @@ namespace ElectricRaspberry.Tests.Services
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task GetCurrentStamina_ShouldReturnMaxStamina_WhenInitialized()
         {
             // Act
@@ -66,7 +66,7 @@ namespace ElectricRaspberry.Tests.Services
             result.Should().Be(_staminaSettings.MaxStamina);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ConsumeStamina_ShouldReduceStamina_BySpecifiedAmount()
         {
             // Arrange
@@ -79,7 +79,7 @@ namespace ElectricRaspberry.Tests.Services
             result.Should().Be(_staminaSettings.MaxStamina - amountToConsume);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task ConsumeStamina_ShouldNotGoBelowZero_WhenConsumingMoreThanAvailable()
         {
             // Arrange
@@ -92,7 +92,7 @@ namespace ElectricRaspberry.Tests.Services
             result.Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Timeout = 5000)]
         public async Task IsSleeping_ShouldReturnFalse_WhenInitialized()
         {
             // Act

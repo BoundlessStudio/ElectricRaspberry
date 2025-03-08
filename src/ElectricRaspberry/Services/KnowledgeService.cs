@@ -45,7 +45,7 @@ public class KnowledgeService : IKnowledgeService
     
     // Person operations
     
-    public async Task<PersonVertex> GetPersonAsync(ulong discordUserId)
+    public async Task<PersonVertex?> GetPersonAsync(ulong discordUserId)
     {
         // Check cache first
         string cacheKey = discordUserId.ToString();
@@ -88,7 +88,7 @@ public class KnowledgeService : IKnowledgeService
         try
         {
             // Check if person exists
-            PersonVertex existingPerson = null;
+            PersonVertex? existingPerson = null;
             if (person.DiscordUserId != 0)
             {
                 existingPerson = await GetPersonAsync(person.DiscordUserId);
@@ -309,7 +309,7 @@ public class KnowledgeService : IKnowledgeService
     
     // Topic operations
     
-    public async Task<TopicVertex> GetTopicAsync(string name)
+    public async Task<TopicVertex?> GetTopicAsync(string name)
     {
         // Check cache first
         string cacheKey = name.ToLowerInvariant();
@@ -492,7 +492,7 @@ public class KnowledgeService : IKnowledgeService
     
     // Memory operations
     
-    public async Task<MemoryVertex> CreateMemoryAsync(string title, string content, string type, string source, DateTime occurredAt)
+    public async Task<MemoryVertex?> CreateMemoryAsync(string title, string content, string type, string source, DateTime occurredAt)
     {
         await _graphLock.WaitAsync();
         try
@@ -631,7 +631,7 @@ public class KnowledgeService : IKnowledgeService
     
     // Relationships between entities
     
-    public async Task<RelationshipEdge> RecordInteractionAsync(ulong sourceUserId, ulong targetUserId, string type)
+    public async Task<RelationshipEdge?> RecordInteractionAsync(ulong sourceUserId, ulong targetUserId, string type)
     {
         await _graphLock.WaitAsync();
         try
@@ -718,7 +718,7 @@ public class KnowledgeService : IKnowledgeService
         }
     }
     
-    public async Task<RelationshipEdge> RecordInteractionAsync(ulong userId)
+    public async Task<RelationshipEdge?> RecordInteractionAsync(ulong userId)
     {
         // Get bot vertex
         var botVertex = await GetBotVertexAsync();
@@ -732,7 +732,7 @@ public class KnowledgeService : IKnowledgeService
         return await RecordInteractionAsync(0, userId, "interaction");
     }
     
-    public async Task<RelationshipEdge> RecordInteractionAsync(string userId)
+    public async Task<RelationshipEdge?> RecordInteractionAsync(string userId)
     {
         if (ulong.TryParse(userId, out ulong id))
         {
@@ -778,7 +778,7 @@ public class KnowledgeService : IKnowledgeService
         return edges.Where(predicate);
     }
     
-    public async Task<T> GetVertexByIdAsync<T>(string id) where T : GraphVertex
+    public async Task<T?> GetVertexByIdAsync<T>(string id) where T : GraphVertex
     {
         await _graphLock.WaitAsync();
         try
@@ -800,7 +800,7 @@ public class KnowledgeService : IKnowledgeService
         }
     }
     
-    public async Task<InterestEdge> RecordInterestAsync(string topicName, double level)
+    public async Task<InterestEdge?> RecordInterestAsync(string topicName, double level)
     {
         await _graphLock.WaitAsync();
         try
@@ -897,7 +897,7 @@ public class KnowledgeService : IKnowledgeService
         }
     }
     
-    public async Task<InterestEdge> RecordInterestAsync(ulong userId, string topicName, string source)
+    public async Task<InterestEdge?> RecordInterestAsync(ulong userId, string topicName, string source)
     {
         await _graphLock.WaitAsync();
         try
@@ -1007,7 +1007,7 @@ public class KnowledgeService : IKnowledgeService
         }
     }
     
-    public async Task<KnowledgeEdge> ConnectMemoryToTopicAsync(string memoryId, string topicName, string source, double relevance = 0.5, double confidence = 0.5)
+    public async Task<KnowledgeEdge?> ConnectMemoryToTopicAsync(string memoryId, string topicName, string source, double relevance = 0.5, double confidence = 0.5)
     {
         await _graphLock.WaitAsync();
         try
@@ -1177,7 +1177,7 @@ public class KnowledgeService : IKnowledgeService
     
     // Helper methods
     
-    private async Task<PersonVertex> GetBotVertexAsync()
+    private async Task<PersonVertex?> GetBotVertexAsync()
     {
         // This represents the bot itself in the graph
         var query = $"g.V().hasLabel('{PersonVertex.VertexLabel}').has('isBot', true)";
@@ -1237,7 +1237,7 @@ public class KnowledgeService : IKnowledgeService
     private async Task<IEnumerable<T>> SubmitGremlinQueryWithRetryAsync<T>(string query, int maxRetries = 3)
     {
         int retryCount = 0;
-        Exception lastException = null;
+        Exception? lastException = null;
         
         while (retryCount < maxRetries)
         {
@@ -1287,8 +1287,6 @@ public class KnowledgeService : IKnowledgeService
             await InitializeGraphAsync();
             
             _logger.LogInformation("Knowledge graph reset completed");
-            
-            return;
         }
         catch (Exception ex)
         {
