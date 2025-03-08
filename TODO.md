@@ -11,7 +11,7 @@ Based on the README architecture and the current scaffolded project, the followi
 - [x] Create `IConversationService` and implementation
 - [ ] Create `IKnowledgeService` and implementation with Cosmos DB + Gremlin integration
 - [x] Create `IStaminaService` and implementation with stamina mechanics
-- [ ] Create `ICatchupService` for sleep mode message processing
+- [x] Create `ICatchupService` for sleep mode message processing
 
 ### Azure Integrations
 - [ ] Add Azure Cosmos DB with Gremlin API configuration and client

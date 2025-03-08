@@ -42,6 +42,7 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddSingleton<IStaminaService, StaminaService>();
 builder.Services.AddSingleton<IEmotionalService, EmotionalService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
+builder.Services.AddSingleton<ICatchupService, CatchupService>();
 // Add remaining services as they are implemented
 
 // Add Discord client and service
