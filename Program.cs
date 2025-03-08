@@ -43,6 +43,7 @@ builder.Services.AddSingleton<IStaminaService, StaminaService>();
 builder.Services.AddSingleton<IEmotionalService, EmotionalService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
 builder.Services.AddSingleton<ICatchupService, CatchupService>();
+builder.Services.AddSingleton<IKnowledgeService, KnowledgeService>();
 // Add remaining services as they are implemented
 
 // Add Discord client and service
