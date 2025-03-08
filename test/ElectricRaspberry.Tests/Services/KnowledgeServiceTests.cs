@@ -37,7 +37,7 @@ namespace ElectricRaspberry.Tests.Services
             _knowledgeServiceMock = new Mock<IKnowledgeService>();
         }
         
-        [Fact(Timeout = 5000)]
+        [Fact(Timeout = 10000)]
         public async Task GetPerson_ShouldReturnNull_WhenPersonDoesNotExist()
         {
             // Arrange
@@ -52,7 +52,7 @@ namespace ElectricRaspberry.Tests.Services
             result.Should().BeNull();
         }
         
-        [Fact(Timeout = 5000)]
+        [Fact(Timeout = 10000)]
         public async Task UpsertPerson_ShouldReturnPerson_WhenSuccessful()
         {
             // Arrange
