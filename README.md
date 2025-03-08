@@ -22,8 +22,7 @@ A .NET Web API application that implements a Discord.Net background service usin
 ```json
 {
   "Discord": {
-    "Token": "YOUR_DISCORD_BOT_TOKEN",
-    "GuildIds": []
+    "Token": "YOUR_DISCORD_BOT_TOKEN"
   }
 }
 ```

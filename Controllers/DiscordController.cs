@@ -25,8 +25,7 @@ public class DiscordController : ControllerBase
     {
         return Ok(new
         {
-            Status = "Active",
-            ConfiguredGuilds = _options.GuildIds.Length
+            Status = "Active"
         });
     }
 }
