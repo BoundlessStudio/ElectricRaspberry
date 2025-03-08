@@ -1,0 +1,83 @@
+# ElectricRaspberry Testing Plan
+
+## Testing Focus 
+Our testing strategy will focus on the following components:
+
+### Services (Priority 1)
+Services contain the core business logic and are the most important to test thoroughly.
+
+- [ ] StaminaService
+  - [x] Initial state tests
+  - [ ] Stamina consumption and recovery
+  - [ ] Sleep/wake transitions
+  - [ ] Forced sleep and wake functions
+  - [ ] Stamina reset
+  
+- [ ] VoiceService
+  - [x] Connection status tests
+  - [ ] Channel join/leave logic
+  - [ ] User presence tracking
+  - [ ] Voice stamina consumption
+  - [ ] Voice events handling
+  
+- [ ] EmotionalService
+  - [ ] Emotional state initialization
+  - [ ] Emotion triggers and responses
+  - [ ] Emotional expressions
+  - [ ] Emotional state transitions
+  
+- [ ] ConversationService
+  - [ ] Message handling
+  - [ ] Context management
+  - [ ] Conversation state tracking
+  
+- [ ] KnowledgeService
+  - [ ] Graph operations
+  - [ ] Relationship tracking
+  - [ ] Memory persistence
+  
+- [ ] CatchupService
+  - [ ] Queue processing
+  - [ ] Message prioritization
+  
+### Handlers (Priority 2)
+Handlers connect external events to our service layer and need testing to ensure proper integration.
+
+- [ ] DiscordEventHandlers
+  - [ ] Message event handling
+  - [ ] User event handling
+  - [ ] Channel event handling
+  
+- [ ] VoiceStateHandler
+  - [ ] Voice state change handling
+  - [ ] Service integration
+  
+### Other Components (Lower Priority)
+These components are mostly boilerplate or act as direct pass-throughs and do not require extensive testing:
+
+- Configuration classes - Simple data containers
+- Model classes - Data structures without complex logic
+- Controllers - Thin pass-through to services
+- Program.cs - Startup configuration
+
+## Testing Approach
+
+1. Unit Tests
+   - Focus on testing services in isolation
+   - Mock external dependencies
+   - Test both happy paths and edge cases
+
+2. Testing Pattern
+   - Use Arrange-Act-Assert pattern
+   - Name tests using `MethodName_Scenario_ExpectedResult` pattern
+   - Group tests by service method where appropriate
+
+3. Test Coverage Goals
+   - High coverage for service layer (>80%)
+   - Medium coverage for handlers (>60%)
+   - Low/no coverage for boilerplate code
+
+## Tools Used
+- xUnit for test framework
+- Moq for mocking dependencies
+- FluentAssertions for readable assertions (to be added)
