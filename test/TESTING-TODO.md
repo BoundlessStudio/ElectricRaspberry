@@ -20,16 +20,16 @@ Services contain the core business logic and are the most important to test thor
   - [x] Voice stamina consumption
   - [x] Voice events handling
   
-- [ ] EmotionalService
-  - [ ] Emotional state initialization
-  - [ ] Emotion triggers and responses
-  - [ ] Emotional expressions
-  - [ ] Emotional state transitions
+- [x] EmotionalService
+  - [x] Emotional state initialization
+  - [x] Emotion triggers and responses
+  - [x] Emotional expressions
+  - [x] Emotional state transitions
   
-- [ ] ConversationService
-  - [ ] Message handling
-  - [ ] Context management
-  - [ ] Conversation state tracking
+- [x] ConversationService
+  - [x] Message handling
+  - [x] Context management
+  - [x] Conversation state tracking
   
 - [ ] KnowledgeService
   - [ ] Graph operations
